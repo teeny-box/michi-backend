@@ -17,7 +17,7 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
     private readonly connection: Connection,
   ) {}
 
-  async create(document: Omit<TDocument, '_id'>, options?: SaveOptions) {
+  async create(document: Partial<TDocument>, options?: SaveOptions) {
     const createdDocument = new this.model({
       ...document,
       _id: new Types.ObjectId(),
@@ -30,12 +30,12 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
   async findOne(filterQuery: FilterQuery<TDocument>) {
     const document = await this.model.findOne(filterQuery, {}, { lean: true });
 
-    if (!document) {
-      this.logger.warn(
-        `Document not found with filter: ${JSON.stringify(filterQuery)}`,
-      );
-      throw new NotFoundException('Document not found');
-    }
+    // if (!document) {
+    //   this.logger.warn(
+    //     `Document not found with filter: ${JSON.stringify(filterQuery)}`,
+    //   );
+    //   throw new NotFoundException('Document not found');
+    // }
 
     return document;
   }
