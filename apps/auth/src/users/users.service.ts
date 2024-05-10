@@ -10,6 +10,7 @@ import {
 import { hashPassword, verifyPassword } from '../common/utils/password.utils';
 import { State } from '../@types/enums/user.enum';
 import { CreateUserDto } from './dto/create-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -59,6 +60,19 @@ export class UsersService {
     return await this.usersRepository.findOneAndUpdate(
       { userId: user.userId },
       updateUserDto,
+    );
+  }
+
+  // 비밀번호 변경
+  async changePassword(changePasswordDto: ChangePasswordDto): Promise<void> {
+    const { userId, newPassword } = changePasswordDto;
+
+    await this.findById(userId);
+    const hashedPassword = await hashPassword(newPassword);
+
+    await this.usersRepository.findOneAndUpdate(
+      { userId },
+      { password: hashedPassword },
     );
   }
 

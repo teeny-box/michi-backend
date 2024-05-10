@@ -15,6 +15,7 @@ import { JwtAuthGuard } from 'apps/auth/src/guards/jwt-auth.guard';
 import RequestWithUser from 'apps/auth/src/interfaces/request-with-user.interface';
 import { HttpResponse } from '../@types/http-response';
 import { Response } from 'express';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -46,6 +47,12 @@ export class UsersController {
     user.password = undefined;
     user.currentRefreshToken = undefined;
     return HttpResponse.success('회원 정보가 수정되었습니다.', user);
+  }
+
+  @Patch('/password')
+  async changePassword(@Body() changePasswordDto: ChangePasswordDto) {
+    const user = await this.usersService.changePassword(changePasswordDto);
+    return HttpResponse.success('비밀번호 변경이 완료되었습니다.', user);
   }
 
   @Delete()

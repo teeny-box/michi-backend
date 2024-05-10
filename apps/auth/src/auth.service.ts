@@ -8,14 +8,19 @@ import { JwtService } from '@nestjs/jwt';
 import TokenPayload from './interfaces/token-payload.interface';
 import { ConfigService } from '@nestjs/config';
 import {
+  UserForbiddenException,
   UserUnauthorizedException,
   UserWithdrawnException,
 } from './exceptions/auth.exception';
-import { UserBadRequestException } from 'apps/auth/src/users/exceptions/users.exception';
+import {
+  UserBadRequestException,
+  UserNotFoundException,
+} from 'apps/auth/src/users/exceptions/users.exception';
 import * as bcrypt from 'bcrypt';
 import { verifyPassword } from './common/utils/password.utils';
 import { State } from './@types/enums/user.enum';
 import { UsersRepository } from './users/users.repository';
+import { AuthVerificationDto } from './users/dto/auth-verification.dto';
 
 @Injectable()
 export class AuthService {
@@ -82,7 +87,7 @@ export class AuthService {
 
   // 회원가입
   async register(registrationData: CreateUserDto): Promise<User> {
-    const { userId, nickname } = registrationData;
+    const { userId, nickname, birthYear } = registrationData;
     if (userId) {
       const existingUser = await this.usersRepository.findOne({ userId });
       if (existingUser) {
@@ -93,6 +98,12 @@ export class AuthService {
     const result = await this.usersService.checkNickname(nickname);
     if (!result) {
       throw new UserBadRequestException('존재하는 닉네임입니다.');
+    }
+
+    const currentYear = new Date().getFullYear();
+    const isUnderage = currentYear - Number(birthYear) < 19;
+    if (isUnderage) {
+      throw new UserForbiddenException('미성년자는 가입할 수 없습니다.');
     }
 
     return await this.usersService.create(registrationData);
@@ -108,6 +119,44 @@ export class AuthService {
     await verifyPassword(password, user.password);
 
     return user;
+  }
+
+  // 아이디 찾기
+  async findUserIdByAuth(
+    authVerificationDto: AuthVerificationDto,
+  ): Promise<string> {
+    const { userName, phoneNumber, birthYear } = authVerificationDto;
+
+    const user = await this.usersRepository.findOne({
+      userName,
+      phoneNumber,
+      birthYear,
+    });
+    if (!user) {
+      throw new UserNotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    return user.userId;
+  }
+
+  // 비밀번호 변경 전 본인인증 정보와 일치여부 확인
+  async checkAuthForPassword(
+    userId: string,
+    authVerificationDto: AuthVerificationDto,
+  ): Promise<void> {
+    const { userName, phoneNumber, birthYear } = authVerificationDto;
+    const user = await this.usersService.findById(userId);
+
+    const isAuthMatch =
+      user.userName === userName &&
+      user.phoneNumber === phoneNumber &&
+      user.birthYear === birthYear;
+
+    if (!isAuthMatch) {
+      throw new UserUnauthorizedException(
+        '해당 유저의 본인인증 정보와 일치하지 않습니다.',
+      );
+    }
   }
 
   // 로그아웃 (빈 값의 쿠키 반환)
