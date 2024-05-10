@@ -17,6 +17,7 @@ import { Response } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth.guard';
 import { HttpResponse } from './@types/http-response';
+import { AuthVerificationDto } from './users/dto/auth-verification.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -46,6 +47,23 @@ export class AuthController {
     });
   }
 
+  @HttpCode(200)
+  @Post('/verification')
+  async findUserIdByAuth(@Body() authVerificationDto: AuthVerificationDto) {
+    const userId = await this.authService.findUserIdByAuth(authVerificationDto);
+    return HttpResponse.success('아이디를 찾았습니다.', userId);
+  }
+
+  @HttpCode(200)
+  @Post('/verification/:userId')
+  async checkAuthForPassword(
+    @Param('userId') userId: string,
+    @Body() authVerificationDto: AuthVerificationDto,
+  ) {
+    await this.authService.checkAuthForPassword(userId, authVerificationDto);
+    return HttpResponse.success('비밀번호 변경이 가능합니다.');
+  }
+
   @Get('/:impUid')
   async getInfoFromPortOne(@Param('impUid') impUid: string) {
     const { name, birthYear, phone } =
@@ -66,7 +84,7 @@ export class AuthController {
     res.json({ code: 200, message: '로그아웃 되었습니다.' });
   }
 
-  @Get('refresh-token')
+  @Get('/refresh-token')
   @UseGuards(RefreshAuthGuard)
   async refreshToken(@Req() req: RequestWithUser, @Res() res: Response) {
     const accessCookie = await this.authService.getCookieWithAccessToken(
