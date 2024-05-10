@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import TokenPayload from './interfaces/token-payload.interface';
 import { ConfigService } from '@nestjs/config';
 import {
+  UserForbiddenException,
   UserUnauthorizedException,
   UserWithdrawnException,
 } from './exceptions/auth.exception';
@@ -82,7 +83,7 @@ export class AuthService {
 
   // 회원가입
   async register(registrationData: CreateUserDto): Promise<User> {
-    const { userId, nickname } = registrationData;
+    const { userId, nickname, birthYear } = registrationData;
     if (userId) {
       const existingUser = await this.usersRepository.findOne({ userId });
       if (existingUser) {
@@ -93,6 +94,12 @@ export class AuthService {
     const result = await this.usersService.checkNickname(nickname);
     if (!result) {
       throw new UserBadRequestException('존재하는 닉네임입니다.');
+    }
+
+    const currentYear = new Date().getFullYear();
+    const isUnderage = currentYear - Number(birthYear) < 19;
+    if (isUnderage) {
+      throw new UserForbiddenException('미성년자는 가입할 수 없습니다.');
     }
 
     return await this.usersService.create(registrationData);
