@@ -46,8 +46,7 @@ export class AuthController {
     });
   }
 
-  @HttpCode(200)
-  @Post('/:impUid')
+  @Get('/:impUid')
   async getInfoFromPortOne(@Param('impUid') impUid: string) {
     const { name, birthYear, phone } =
       await this.authService.getInfoFromPortOne(impUid);
