@@ -16,9 +16,20 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
+  // 아이디 사용 가능 여부
+  async checkUserId(userId: string): Promise<void> {
+    const existingUser = await this.usersRepository.findOne({ userId });
+    if (existingUser) {
+      throw new UserBadRequestException('존재하는 ID입니다.');
+    }
+  }
+
   // 닉네임 사용 가능 여부
-  async checkNickname(nickname: string): Promise<boolean> {
-    return !(await this.usersRepository.findOne({ nickname }));
+  async checkNickname(nickname: string): Promise<void> {
+    const existingUser = await this.usersRepository.findOne({ nickname });
+    if (existingUser) {
+      throw new UserBadRequestException('존재하는 닉네임입니다.');
+    }
   }
 
   // 회원 생성
