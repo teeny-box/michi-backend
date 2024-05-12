@@ -12,10 +12,7 @@ import {
   UserUnauthorizedException,
   UserWithdrawnException,
 } from './exceptions/auth.exception';
-import {
-  UserBadRequestException,
-  UserNotFoundException,
-} from 'apps/auth/src/users/exceptions/users.exception';
+import { UserNotFoundException } from 'apps/auth/src/users/exceptions/users.exception';
 import * as bcrypt from 'bcrypt';
 import { verifyPassword } from './common/utils/password.utils';
 import { State } from './@types/enums/user.enum';
@@ -88,17 +85,9 @@ export class AuthService {
   // 회원가입
   async register(registrationData: CreateUserDto): Promise<User> {
     const { userId, nickname, birthYear } = registrationData;
-    if (userId) {
-      const existingUser = await this.usersRepository.findOne({ userId });
-      if (existingUser) {
-        throw new UserBadRequestException('존재하는 ID입니다.');
-      }
-    }
 
-    const result = await this.usersService.checkNickname(nickname);
-    if (!result) {
-      throw new UserBadRequestException('존재하는 닉네임입니다.');
-    }
+    await this.usersService.checkUserId(userId);
+    await this.usersService.checkNickname(nickname);
 
     const currentYear = new Date().getFullYear();
     const isUnderage = currentYear - Number(birthYear) < 19;

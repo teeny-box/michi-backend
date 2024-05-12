@@ -21,12 +21,16 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get('/id-check/:userId')
+  async checkUserId(@Param('userId') userId: string) {
+    await this.usersService.checkUserId(userId);
+    return HttpResponse.success('사용 가능한 아이디입니다.');
+  }
+
   @Get('/nickname-check/:nickname')
   async checkNickname(@Param('nickname') nickname: string) {
-    const result = await this.usersService.checkNickname(nickname);
-    return HttpResponse.success('닉네임 사용 가능 여부', {
-      available: result,
-    });
+    await this.usersService.checkNickname(nickname);
+    return HttpResponse.success('사용 가능한 닉네임입니다.');
   }
 
   @Get()
