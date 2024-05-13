@@ -24,6 +24,11 @@ export class UsersService {
     }
   }
 
+  // 아이디 존재 여부 체크
+  async checkUserIdExists(userId: string): Promise<void> {
+    await this.findById(userId);
+  }
+
   // 닉네임 사용 가능 여부
   async checkNickname(nickname: string): Promise<void> {
     const existingUser = await this.usersRepository.findOne({ nickname });

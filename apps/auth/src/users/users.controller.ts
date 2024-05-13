@@ -27,6 +27,12 @@ export class UsersController {
     return HttpResponse.success('사용 가능한 아이디입니다.');
   }
 
+  @Get('/id-exists/:userId')
+  async checkUserIdExists(@Param('userId') userId: string) {
+    await this.usersService.checkUserIdExists(userId);
+    return HttpResponse.success('아이디가 존재합니다.');
+  }
+
   @Get('/nickname-check/:nickname')
   async checkNickname(@Param('nickname') nickname: string) {
     await this.usersService.checkNickname(nickname);
