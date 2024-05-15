@@ -13,7 +13,7 @@ import {
   UserWithdrawnException,
 } from './exceptions/auth.exception';
 import { UserNotFoundException } from 'apps/auth/src/users/exceptions/users.exception';
-import * as bcrypt from 'bcrypt';
+import * as argon2 from 'argon2';
 import { verifyPassword } from './common/utils/password.utils';
 import { State } from './@types/enums/user.enum';
 import { UsersRepository } from './users/users.repository';
@@ -148,11 +148,9 @@ export class AuthService {
     }
   }
 
-  // 로그아웃 (빈 값의 쿠키 반환)
-  async getCookieForLogout() {
-    const accessCookie = `michiAccessToken=; HttpOnly; Path=/; Max-Age=0`;
-    const refreshCookie = `michiRefreshToken=; HttpOnly; Path=/; Max-Age=0`;
-    return { accessCookie, refreshCookie };
+  // 로그아웃 (db에서 리프레시토큰 삭제)
+  async logout(userId: string): Promise<void> {
+    await this.usersService.clearCurrentRefreshToken(userId);
   }
 
   // access token 생성
@@ -175,33 +173,31 @@ export class AuthService {
     return token;
   }
 
-  // access token 생성, 쿠키 반환
-  async getCookieWithAccessToken(user: User) {
-    const token = await this.getAccessToken(user);
-    return `michiAccessToken=${token}; HttpOnly; SameSite=None; Secure; Max-Age=${process.env.JWT_EXPIRATION_TIME}; Path=/`; // JWT 토큰을 쿠키 형태로 반환
-  }
-
-  // refresh token 생성, 쿠키 반환
-  async getCookieWithRefreshToken(user: User) {
-    const token = await this.getRefreshToken(user);
-    return `michiRefreshToken=${token}; HttpOnly; SameSite=None; Secure; Max-Age=${process.env.JWT_REFRESH_EXPIRATION_TIME}; Path=/`;
+  // 만료된 access token이 맞는지 검증
+  async isAccessTokenExpired(accessToken: string): Promise<boolean> {
+    try {
+      await this.jwtService.verifyAsync(accessToken);
+      return false;
+    } catch (e) {
+      return true;
+    }
   }
 
   // refresh token 검증
-  async refreshTokenMatches(refreshToken: string, refreshUserId: string) {
-    const user = await this.usersService.findById(refreshUserId);
-    // 사용자가 존재하지 않거나 refresh token이 null일 경우 (만료됐을 경우)
+  async refreshTokenMatches(refreshToken: string, userId: string) {
+    const user = await this.usersService.findById(userId);
+    // 사용자가 존재하지 않거나 refresh token이 null일 경우
     if (!user || !user.currentRefreshToken) {
       throw new UserUnauthorizedException('Refresh token expired.');
     }
-
     // 유저 DB에 저장된 암호화된 refresh token 값과 받은 refresh token 값 비교
-    const isRefreshTokenMatching = await bcrypt.compare(
-      refreshToken,
+    const isRefreshTokenMatching = await argon2.verify(
       user.currentRefreshToken,
+      refreshToken,
     );
     // 사용자가 유효한 리프레시 토큰을 제공했지만, 사용자가 저장한 토큰과 일치하지 않을 때 (탈취되었을 위험)
     if (!isRefreshTokenMatching) {
+      await this.usersService.clearCurrentRefreshToken(userId);
       throw new UserUnauthorizedException('Invalid refresh token.');
     }
     return user;
