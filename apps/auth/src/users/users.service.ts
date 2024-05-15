@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import { UsersRepository } from './users.repository';
 import { User } from './schemas/user.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -11,6 +10,7 @@ import { hashPassword, verifyPassword } from '../common/utils/password.utils';
 import { State } from '../@types/enums/user.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class UsersService {
@@ -105,16 +105,17 @@ export class UsersService {
     refreshToken: string,
     userId: string,
   ): Promise<void> {
-    const currentRefreshToken =
-      await this.getCurrentHashedRefreshToken(refreshToken);
+    const hashedRefreshToken = await argon2.hash(refreshToken);
     await this.usersRepository.findOneAndUpdate(
       { userId },
-      { currentRefreshToken },
+      { currentRefreshToken: hashedRefreshToken },
     );
   }
 
-  async getCurrentHashedRefreshToken(refreshToken: string): Promise<string> {
-    const salt = await bcrypt.genSalt(10);
-    return await bcrypt.hash(refreshToken, salt);
+  async clearCurrentRefreshToken(userId: string): Promise<void> {
+    await this.usersRepository.findOneAndUpdate(
+      { userId },
+      { currentRefreshToken: null },
+    );
   }
 }
