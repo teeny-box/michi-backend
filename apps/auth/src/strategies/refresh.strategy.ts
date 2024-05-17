@@ -25,7 +25,7 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
     const isAccessTokenExpired =
       await this.authService.isAccessTokenExpired(expiredAccessToken);
     if (!isAccessTokenExpired) {
-      await this.usersService.clearCurrentRefreshToken(payload.userId);
+      await this.usersService.clearCurrentRefreshToken(payload._id);
       throw new NotExpiredAccessTokenException(
         'This is not an expired access token.',
       );
@@ -33,7 +33,7 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
     const refreshToken = req.headers.authorization.split(' ')[1];
     return await this.authService.refreshTokenMatches(
       refreshToken,
-      payload.userId,
+      payload._id,
     );
   }
 }
