@@ -4,8 +4,10 @@ import { User } from './schemas/user.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
   UserBadRequestException,
+  UserIdDuplicateException,
+  UserNicknameDuplicateException,
   UserNotFoundException,
-} from './exceptions/users.exception';
+} from '../exceptions/users.exception';
 import { hashPassword, verifyPassword } from '../common/utils/password.utils';
 import { State } from '../@types/enums/user.enum';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -20,7 +22,7 @@ export class UsersService {
   async checkUserId(userId: string): Promise<void> {
     const existingUser = await this.usersRepository.findOne({ userId });
     if (existingUser) {
-      throw new UserBadRequestException('존재하는 ID입니다.');
+      throw new UserIdDuplicateException('존재하는 ID입니다.');
     }
   }
 
@@ -33,7 +35,7 @@ export class UsersService {
   async checkNickname(nickname: string): Promise<void> {
     const existingUser = await this.usersRepository.findOne({ nickname });
     if (existingUser) {
-      throw new UserBadRequestException('존재하는 닉네임입니다.');
+      throw new UserNicknameDuplicateException('존재하는 닉네임입니다.');
     }
   }
 

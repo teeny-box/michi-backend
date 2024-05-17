@@ -11,6 +11,22 @@ export class UserUnauthorizedException extends BaseException {
   }
 }
 
+export class NotExpiredAccessTokenException extends BaseException {
+  constructor(message: string) {
+    super(
+      AuthExceptionEnum.NOT_EXPIRED_ACCESS_TOKEN,
+      HttpStatus.UNAUTHORIZED,
+      message,
+    );
+  }
+}
+
+export class InvalidTokenException extends BaseException {
+  constructor(message: string) {
+    super(AuthExceptionEnum.INVALID_TOKEN, HttpStatus.UNAUTHORIZED, message);
+  }
+}
+
 export class UserForbiddenException extends BaseException {
   constructor(message: string) {
     super(AuthExceptionEnum.USER_FORBIDDEN, HttpStatus.FORBIDDEN, message);

@@ -8,11 +8,12 @@ import { JwtService } from '@nestjs/jwt';
 import TokenPayload from './interfaces/token-payload.interface';
 import { ConfigService } from '@nestjs/config';
 import {
+  InvalidTokenException,
   UserForbiddenException,
   UserUnauthorizedException,
   UserWithdrawnException,
 } from './exceptions/auth.exception';
-import { UserNotFoundException } from 'apps/auth/src/users/exceptions/users.exception';
+import { UserNotFoundException } from 'apps/auth/src/exceptions/users.exception';
 import * as argon2 from 'argon2';
 import { verifyPassword } from './common/utils/password.utils';
 import { State } from './@types/enums/user.enum';
@@ -198,7 +199,7 @@ export class AuthService {
     // 사용자가 유효한 리프레시 토큰을 제공했지만, 사용자가 저장한 토큰과 일치하지 않을 때 (탈취되었을 위험)
     if (!isRefreshTokenMatching) {
       await this.usersService.clearCurrentRefreshToken(userId);
-      throw new UserUnauthorizedException('Invalid refresh token.');
+      throw new InvalidTokenException('Invalid refresh token.');
     }
     return user;
   }

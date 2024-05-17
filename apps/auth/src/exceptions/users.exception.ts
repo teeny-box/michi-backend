@@ -12,3 +12,19 @@ export class UserBadRequestException extends BaseException {
     super(UserExceptionEnum.USER_BAD_REQUEST, HttpStatus.BAD_REQUEST, message);
   }
 }
+
+export class UserIdDuplicateException extends BaseException {
+  constructor(message: string) {
+    super(UserExceptionEnum.USER_ID_DUPLICATE, HttpStatus.BAD_REQUEST, message);
+  }
+}
+
+export class UserNicknameDuplicateException extends BaseException {
+  constructor(message: string) {
+    super(
+      UserExceptionEnum.USER_NICKNAME_DUPLICATE,
+      HttpStatus.BAD_REQUEST,
+      message,
+    );
+  }
+}
