@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { ObjectId } from 'mongodb';
 import {
   InvalidTokenException,
+  UserConflictException,
   UserForbiddenException,
   UserUnauthorizedException,
   UserWithdrawnException,
@@ -86,10 +87,20 @@ export class AuthService {
 
   // 회원가입
   async register(registrationData: CreateUserDto): Promise<User> {
-    const { userId, nickname, birthYear } = registrationData;
+    const { userId, nickname, userName, phoneNumber, birthYear } =
+      registrationData;
 
     await this.usersService.checkUserId(userId);
     await this.usersService.checkNickname(nickname);
+
+    const user = await this.usersRepository.findOne({
+      userName,
+      phoneNumber,
+      birthYear,
+    });
+    if (user) {
+      throw new UserConflictException('이미 존재하는 사용자입니다.');
+    }
 
     const currentYear = new Date().getFullYear();
     const isUnderage = currentYear - Number(birthYear) < 19;

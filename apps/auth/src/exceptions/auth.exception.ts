@@ -38,3 +38,9 @@ export class UserWithdrawnException extends BaseException {
     super(AuthExceptionEnum.USER_WITHDRAWN, HttpStatus.FORBIDDEN, message);
   }
 }
+
+export class UserConflictException extends BaseException {
+  constructor(message: string) {
+    super(AuthExceptionEnum.USER_CONFLICT, HttpStatus.CONFLICT, message);
+  }
+}

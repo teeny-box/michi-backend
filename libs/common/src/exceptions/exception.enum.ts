@@ -15,4 +15,5 @@ export enum AuthExceptionEnum {
   INVALID_TOKEN = '1012',
   USER_FORBIDDEN = '1030',
   USER_WITHDRAWN = '1031',
+  USER_CONFLICT = '1090',
 }
