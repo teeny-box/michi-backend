@@ -21,12 +21,22 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get('/id-check/:userId')
+  async checkUserId(@Param('userId') userId: string) {
+    await this.usersService.checkUserId(userId);
+    return HttpResponse.success('사용 가능한 아이디입니다.');
+  }
+
+  @Get('/id-exists/:userId')
+  async checkUserIdExists(@Param('userId') userId: string) {
+    await this.usersService.checkUserIdExists(userId);
+    return HttpResponse.success('아이디가 존재합니다.');
+  }
+
   @Get('/nickname-check/:nickname')
   async checkNickname(@Param('nickname') nickname: string) {
-    const result = await this.usersService.checkNickname(nickname);
-    return HttpResponse.success('닉네임 사용 가능 여부', {
-      available: result,
-    });
+    await this.usersService.checkNickname(nickname);
+    return HttpResponse.success('사용 가능한 닉네임입니다.');
   }
 
   @Get()
@@ -58,7 +68,7 @@ export class UsersController {
   @Delete()
   @UseGuards(JwtAuthGuard)
   async remove(@Req() req: RequestWithUser, @Res() res: Response) {
-    await this.usersService.remove(req.user.userId);
+    await this.usersService.remove(req.user._id);
     res.clearCookie('michiAccessToken', { path: '/' });
     res.clearCookie('michiRefreshToken', { path: '/' });
     res.json({ code: 200, message: '회원 탈퇴가 완료되었습니다.' });

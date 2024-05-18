@@ -1,7 +1,8 @@
+import { ObjectId } from 'mongodb';
 import { Role } from '../@types/enums/user.enum';
 
 interface TokenPayload {
-  userId: string;
+  _id: ObjectId;
   role?: Role;
 }
 export default TokenPayload;
