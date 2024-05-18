@@ -71,7 +71,7 @@ export class AuthController {
   @Get('/logout')
   @UseGuards(JwtAuthGuard)
   async logout(@Req() req: RequestWithUser) {
-    await this.authService.logout(req.user.userId);
+    await this.authService.logout(req.user._id);
     return HttpResponse.success('로그아웃 되었습니다.');
   }
 

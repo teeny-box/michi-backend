@@ -4,7 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Request } from 'express';
 import TokenPayload from '../interfaces/token-payload.interface';
 import { AuthService } from '../auth.service';
-import { UserUnauthorizedException } from '../exceptions/auth.exception';
+import { NotExpiredAccessTokenException } from '../exceptions/auth.exception';
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -25,15 +25,15 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
     const isAccessTokenExpired =
       await this.authService.isAccessTokenExpired(expiredAccessToken);
     if (!isAccessTokenExpired) {
-      await this.usersService.clearCurrentRefreshToken(payload.userId);
-      throw new UserUnauthorizedException(
+      await this.usersService.clearCurrentRefreshToken(payload._id);
+      throw new NotExpiredAccessTokenException(
         'This is not an expired access token.',
       );
     }
     const refreshToken = req.headers.authorization.split(' ')[1];
     return await this.authService.refreshTokenMatches(
       refreshToken,
-      payload.userId,
+      payload._id,
     );
   }
 }

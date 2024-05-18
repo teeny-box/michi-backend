@@ -68,7 +68,7 @@ export class UsersController {
   @Delete()
   @UseGuards(JwtAuthGuard)
   async remove(@Req() req: RequestWithUser, @Res() res: Response) {
-    await this.usersService.remove(req.user.userId);
+    await this.usersService.remove(req.user._id);
     res.clearCookie('michiAccessToken', { path: '/' });
     res.clearCookie('michiRefreshToken', { path: '/' });
     res.json({ code: 200, message: '회원 탈퇴가 완료되었습니다.' });

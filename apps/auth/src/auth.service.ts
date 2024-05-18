@@ -7,12 +7,15 @@ import { catchError, lastValueFrom, map } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
 import TokenPayload from './interfaces/token-payload.interface';
 import { ConfigService } from '@nestjs/config';
+import { ObjectId } from 'mongodb';
 import {
+  InvalidTokenException,
+  UserConflictException,
   UserForbiddenException,
   UserUnauthorizedException,
   UserWithdrawnException,
 } from './exceptions/auth.exception';
-import { UserNotFoundException } from 'apps/auth/src/users/exceptions/users.exception';
+import { UserNotFoundException } from 'apps/auth/src/exceptions/users.exception';
 import * as argon2 from 'argon2';
 import { verifyPassword } from './common/utils/password.utils';
 import { State } from './@types/enums/user.enum';
@@ -84,10 +87,20 @@ export class AuthService {
 
   // 회원가입
   async register(registrationData: CreateUserDto): Promise<User> {
-    const { userId, nickname, birthYear } = registrationData;
+    const { userId, nickname, userName, phoneNumber, birthYear } =
+      registrationData;
 
     await this.usersService.checkUserId(userId);
     await this.usersService.checkNickname(nickname);
+
+    const user = await this.usersRepository.findOne({
+      userName,
+      phoneNumber,
+      birthYear,
+    });
+    if (user) {
+      throw new UserConflictException('이미 존재하는 사용자입니다.');
+    }
 
     const currentYear = new Date().getFullYear();
     const isUnderage = currentYear - Number(birthYear) < 19;
@@ -100,7 +113,7 @@ export class AuthService {
 
   // 로그인
   async login(userId: string, password: string): Promise<User> {
-    const user = await this.usersService.findById(userId);
+    const user = await this.usersService.findByUserId(userId);
     if (user.state === State.WITHDRAWN) {
       throw new UserWithdrawnException('탈퇴한 회원입니다.');
     }
@@ -134,7 +147,7 @@ export class AuthService {
     authVerificationDto: AuthVerificationDto,
   ): Promise<void> {
     const { userName, phoneNumber, birthYear } = authVerificationDto;
-    const user = await this.usersService.findById(userId);
+    const user = await this.usersService.findByUserId(userId);
 
     const isAuthMatch =
       user.userName === userName &&
@@ -149,14 +162,14 @@ export class AuthService {
   }
 
   // 로그아웃 (db에서 리프레시토큰 삭제)
-  async logout(userId: string): Promise<void> {
-    await this.usersService.clearCurrentRefreshToken(userId);
+  async logout(_id: ObjectId): Promise<void> {
+    await this.usersService.clearCurrentRefreshToken(_id);
   }
 
   // access token 생성
   async getAccessToken(user: User) {
     const payload: TokenPayload = {
-      userId: user.userId,
+      _id: user._id,
       role: user.role,
     };
     return await this.jwtService.signAsync(payload);
@@ -164,12 +177,12 @@ export class AuthService {
 
   // refresh token 생성
   async getRefreshToken(user: User) {
-    const payload: TokenPayload = { userId: user.userId };
+    const payload: TokenPayload = { _id: user._id };
     const token = await this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION_TIME'),
     });
-    await this.usersService.setCurrentRefreshToken(token, user.userId);
+    await this.usersService.setCurrentRefreshToken(token, user._id);
     return token;
   }
 
@@ -184,8 +197,8 @@ export class AuthService {
   }
 
   // refresh token 검증
-  async refreshTokenMatches(refreshToken: string, userId: string) {
-    const user = await this.usersService.findById(userId);
+  async refreshTokenMatches(refreshToken: string, _id: ObjectId) {
+    const user = await this.usersService.findById(_id);
     // 사용자가 존재하지 않거나 refresh token이 null일 경우
     if (!user || !user.currentRefreshToken) {
       throw new UserUnauthorizedException('Refresh token expired.');
@@ -197,8 +210,8 @@ export class AuthService {
     );
     // 사용자가 유효한 리프레시 토큰을 제공했지만, 사용자가 저장한 토큰과 일치하지 않을 때 (탈취되었을 위험)
     if (!isRefreshTokenMatching) {
-      await this.usersService.clearCurrentRefreshToken(userId);
-      throw new UserUnauthorizedException('Invalid refresh token.');
+      await this.usersService.clearCurrentRefreshToken(_id);
+      throw new InvalidTokenException('Invalid refresh token.');
     }
     return user;
   }
