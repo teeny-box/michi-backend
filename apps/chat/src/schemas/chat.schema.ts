@@ -2,15 +2,15 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { AbstractDocument } from '@/common';
 
 @Schema()
-export class Message extends AbstractDocument {
+export class Chat extends AbstractDocument {
   @Prop({ type: String })
-  text: string;
+  message: string;
 
   @Prop({ type: String })
   userId: string;
 
   @Prop({ type: String })
-  chatId: string;
+  chatroomId: string;
 }
 
-export const MessageSchema = SchemaFactory.createForClass(Message);
+export const ChatSchema = SchemaFactory.createForClass(Chat);
