@@ -18,10 +18,11 @@ import * as Joi from "joi";
       }),
       envFilePath: './apps/chat/.env',
     }),
-      SocketModule,
+    SocketModule,
     MongooseModule.forFeature([{ name: 'ChatRoom', schema: ChatRoomSchema }]),
     DatabaseModule],
   controllers: [ChatroomController],
   providers: [ChatroomService, ChatroomRepository],
+  exports: [ChatroomService],
 })
 export class ChatroomModule {}

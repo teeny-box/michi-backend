@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Post, Query, Req, UseGuards} from '@nestjs/common';
+import {Body, Controller, Get, Param, Post, Query, Req, UseGuards} from '@nestjs/common';
 import {ChatroomService} from './chatroom.service';
 import {CreateChatroomDto} from "./dto/create-chatroom.dto";
 import {JwtAuthGuard} from "../../auth/src/guards/jwt-auth.guard";
@@ -25,9 +25,15 @@ export class ChatroomController {
     return HttpResponse.success('채팅방 조회가 완료되었습니다.', data, meta);
   }
 
+  /**
+   * 채팅방 생성
+   * @param req
+   * @param createChatRoomDto
+   */
   @UseGuards(JwtAuthGuard)
-  @Post('')
+  @Post(':userId')
   async createChatRoom(@Req() req: RequestWithUser, @Body() createChatRoomDto: CreateChatroomDto) {
+    console.log(req.user)
     const result = await this.chatroomService.createChatRoom(req.user, createChatRoomDto);
     return HttpResponse.success('채팅방이 생성되었습니다.', new ChatroomResponseDto(result));
   }

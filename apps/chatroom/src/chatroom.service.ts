@@ -16,11 +16,19 @@ export class ChatroomService {
 
   async createChatRoom(user: User, createChatRoomDto: CreateChatroomDto) {
       return await this.chatroomRepository.create({
-        ...createChatRoomDto
+        ...createChatRoomDto,
+        ownerId: user.userId,
       });
   }
 
-  async joinChatRoom(user: User, chatRoomId: string) {
-    return await this.chatroomRepository.findOneAndUpdate({ _id: chatRoomId }, { $push: { userIds: user.userId } });
+  async joinChatRoom(userId: string, chatRoomId: string) {
+    return await this.chatroomRepository.findOneAndUpdate({ _id: chatRoomId }, { $push: { userIds: userId } });
+  }
+
+  async leaveChatRoom(userId: string, chatRoomId: string) {
+    const chatroom = await this.chatroomRepository.findOneAndUpdate({ _id: chatRoomId }, { $pull: { userIds: userId } });
+    if (chatroom.userIds.length === 0) {
+      await this.chatroomRepository.findOneAndUpdate({ _id: chatRoomId}, { deletedAt: new Date()});
+    }
   }
 }
