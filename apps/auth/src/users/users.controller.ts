@@ -43,7 +43,6 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   async findOne(@Req() req: RequestWithUser) {
     req.user.password = undefined;
-    req.user.currentRefreshToken = undefined;
     return HttpResponse.success('회원 정보가 조회되었습니다.', req.user);
   }
 
@@ -55,7 +54,6 @@ export class UsersController {
   ) {
     const user = await this.usersService.update(req.user, updateUserDto);
     user.password = undefined;
-    user.currentRefreshToken = undefined;
     return HttpResponse.success('회원 정보가 수정되었습니다.', user);
   }
 

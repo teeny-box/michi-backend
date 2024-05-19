@@ -13,7 +13,6 @@ import { hashPassword, verifyPassword } from '../common/utils/password.utils';
 import { State } from '../@types/enums/user.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import * as argon2 from 'argon2';
 
 @Injectable()
 export class UsersService {
@@ -110,29 +109,9 @@ export class UsersService {
     await this.usersRepository.findOneAndUpdate(
       { _id },
       {
-        currentRefreshToken: null,
         state: State.WITHDRAWN,
         deletedAt: new Date(),
       },
-    );
-  }
-
-  // refresh token 저장
-  async setCurrentRefreshToken(
-    refreshToken: string,
-    _id: ObjectId,
-  ): Promise<void> {
-    const hashedRefreshToken = await argon2.hash(refreshToken);
-    await this.usersRepository.findOneAndUpdate(
-      { _id },
-      { currentRefreshToken: hashedRefreshToken },
-    );
-  }
-
-  async clearCurrentRefreshToken(_id: ObjectId): Promise<void> {
-    await this.usersRepository.findOneAndUpdate(
-      { _id },
-      { currentRefreshToken: null },
     );
   }
 }

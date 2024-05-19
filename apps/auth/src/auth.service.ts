@@ -16,11 +16,11 @@ import {
   UserWithdrawnException,
 } from './exceptions/auth.exception';
 import { UserNotFoundException } from 'apps/auth/src/exceptions/users.exception';
-import * as argon2 from 'argon2';
 import { verifyPassword } from './common/utils/password.utils';
 import { State } from './@types/enums/user.enum';
 import { UsersRepository } from './users/users.repository';
 import { AuthVerificationDto } from './users/dto/auth-verification.dto';
+import { RedisCacheService } from '@/common';
 
 @Injectable()
 export class AuthService {
@@ -30,6 +30,7 @@ export class AuthService {
     private readonly httpService: HttpService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly redisCacheService: RedisCacheService,
   ) {}
 
   // 포트원 -> 출생년도, 폰번호 가져오기
@@ -163,7 +164,7 @@ export class AuthService {
 
   // 로그아웃 (db에서 리프레시토큰 삭제)
   async logout(_id: ObjectId): Promise<void> {
-    await this.usersService.clearCurrentRefreshToken(_id);
+    await this.redisCacheService.del(_id.toString());
   }
 
   // access token 생성
@@ -175,14 +176,18 @@ export class AuthService {
     return await this.jwtService.signAsync(payload);
   }
 
-  // refresh token 생성
+  // refresh token 생성 (db에 저장)
   async getRefreshToken(user: User) {
     const payload: TokenPayload = { _id: user._id };
     const token = await this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION_TIME'),
     });
-    await this.usersService.setCurrentRefreshToken(token, user._id);
+    await this.redisCacheService.set(
+      user._id.toString(),
+      token,
+      this.configService.get<number>('JWT_REFRESH_EXPIRATION_TIME') / 1000,
+    );
     return token;
   }
 
@@ -199,20 +204,21 @@ export class AuthService {
   // refresh token 검증
   async refreshTokenMatches(refreshToken: string, _id: ObjectId) {
     const user = await this.usersService.findById(_id);
-    // 사용자가 존재하지 않거나 refresh token이 null일 경우
-    if (!user || !user.currentRefreshToken) {
+
+    // db에 저장된 refresh token 값과 받은 refresh token 값 비교
+    const currentRefreshToken = await this.redisCacheService.get(
+      _id.toString(),
+    );
+    // db에 리프레시 토큰이 없을 경우 (만료)
+    if (!currentRefreshToken) {
       throw new UserUnauthorizedException('Refresh token expired.');
     }
-    // 유저 DB에 저장된 암호화된 refresh token 값과 받은 refresh token 값 비교
-    const isRefreshTokenMatching = await argon2.verify(
-      user.currentRefreshToken,
-      refreshToken,
-    );
-    // 사용자가 유효한 리프레시 토큰을 제공했지만, 사용자가 저장한 토큰과 일치하지 않을 때 (탈취되었을 위험)
-    if (!isRefreshTokenMatching) {
-      await this.usersService.clearCurrentRefreshToken(_id);
+    // 사용자가 유효한 리프레시 토큰을 제공했지만, db에 저장된 토큰과 일치하지 않을 때 (탈취되었을 위험)
+    if (currentRefreshToken !== refreshToken) {
+      await this.redisCacheService.del(_id.toString());
       throw new InvalidTokenException('Invalid refresh token.');
     }
+
     return user;
   }
 }
