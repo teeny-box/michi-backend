@@ -21,6 +21,7 @@ import { State } from './@types/enums/user.enum';
 import { UsersRepository } from './users/users.repository';
 import { AuthVerificationDto } from './users/dto/auth-verification.dto';
 import { RedisCacheService } from '@/common';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class AuthService {
@@ -183,9 +184,10 @@ export class AuthService {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION_TIME'),
     });
+    const hashedRefreshToken = await argon2.hash(token);
     await this.redisCacheService.set(
       user._id.toString(),
-      token,
+      hashedRefreshToken,
       this.configService.get<number>('JWT_REFRESH_EXPIRATION_TIME') / 1000,
     );
     return token;
@@ -205,7 +207,6 @@ export class AuthService {
   async refreshTokenMatches(refreshToken: string, _id: ObjectId) {
     const user = await this.usersService.findById(_id);
 
-    // db에 저장된 refresh token 값과 받은 refresh token 값 비교
     const currentRefreshToken = await this.redisCacheService.get(
       _id.toString(),
     );
@@ -213,8 +214,13 @@ export class AuthService {
     if (!currentRefreshToken) {
       throw new UserUnauthorizedException('Refresh token expired.');
     }
+    // db에 저장된 refresh token 값과 받은 refresh token 값 비교
+    const isRefreshTokenMatching = await argon2.verify(
+      currentRefreshToken,
+      refreshToken,
+    );
     // 사용자가 유효한 리프레시 토큰을 제공했지만, db에 저장된 토큰과 일치하지 않을 때 (탈취되었을 위험)
-    if (currentRefreshToken !== refreshToken) {
+    if (!isRefreshTokenMatching) {
       await this.redisCacheService.del(_id.toString());
       throw new InvalidTokenException('Invalid refresh token.');
     }
