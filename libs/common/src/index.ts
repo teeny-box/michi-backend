@@ -6,3 +6,6 @@ export * from './exceptions/base.exception.interface';
 export * from './exceptions/exception.enum';
 export * from './exceptions/exception.filter';
 export * from './exceptions/uncatch.exception';
+export * from './config/redis-cache.config';
+export * from './redis-cache/redis-cache.module';
+export * from './redis-cache/redis-cache.service';
