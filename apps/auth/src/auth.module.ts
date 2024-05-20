@@ -16,6 +16,7 @@ import { UsersModule } from './users/users.module';
 import { UsersService } from './users/users.service';
 import { UsersRepository } from './users/users.repository';
 import { RedisModule } from '@songkeys/nestjs-redis';
+import { OneTimeStrategy } from './strategies/one-time.strategy';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { RedisModule } from '@songkeys/nestjs-redis';
     LocalStrategy,
     JwtStrategy,
     RefreshStrategy,
+    OneTimeStrategy,
     UsersService,
     UsersRepository,
   ],

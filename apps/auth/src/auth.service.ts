@@ -143,24 +143,24 @@ export class AuthService {
     return user.userId;
   }
 
-  // 비밀번호 변경 전 본인인증 정보와 일치여부 확인
-  async checkAuthForPassword(
-    userId: string,
-    authVerificationDto: AuthVerificationDto,
-  ): Promise<void> {
-    const { userName, phoneNumber, birthYear } = authVerificationDto;
+  // 비밀번호 변경 전 포트원에서 본인인증 정보 가져온 후 회원정보와 일치여부 확인 (일치하면 일회용 토큰 발급)
+  async checkAuthForPassword(impUid: string, userId: string): Promise<string> {
     const user = await this.usersService.findByUserId(userId);
+    const { name, birthYear, phone } = await this.getInfoFromPortOne(impUid);
 
     const isAuthMatch =
-      user.userName === userName &&
-      user.phoneNumber === phoneNumber &&
+      user.userName === name &&
+      user.phoneNumber === phone &&
       user.birthYear === birthYear;
-
     if (!isAuthMatch) {
       throw new UserUnauthorizedException(
         '해당 유저의 본인인증 정보와 일치하지 않습니다.',
       );
     }
+
+    const token = await this.getOneTimeToken(user);
+
+    return token;
   }
 
   // 로그아웃 (db에서 리프레시토큰 삭제)
@@ -184,12 +184,25 @@ export class AuthService {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION_TIME'),
     });
+
     const hashedRefreshToken = await argon2.hash(token);
     await this.redisCacheService.set(
       user._id.toString(),
       hashedRefreshToken,
       this.configService.get<number>('JWT_REFRESH_EXPIRATION_TIME') / 1000,
     );
+
+    return token;
+  }
+
+  // 일회용 토큰 생성
+  async getOneTimeToken(user: User) {
+    const payload: TokenPayload = { _id: user._id };
+    const token = await this.jwtService.signAsync(payload, {
+      secret: this.configService.get<string>('JWT_ONETIME_SECRET'),
+      expiresIn: this.configService.get<string>('JWT_ONETIME_EXPIRATION_TIME'),
+    });
+
     return token;
   }
 

@@ -12,7 +12,6 @@ import { ObjectId } from 'mongodb';
 import { hashPassword, verifyPassword } from '../common/utils/password.utils';
 import { State } from '../@types/enums/user.enum';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -92,14 +91,11 @@ export class UsersService {
   }
 
   // 비밀번호 변경
-  async changePassword(changePasswordDto: ChangePasswordDto): Promise<void> {
-    const { userId, newPassword } = changePasswordDto;
-
-    await this.findByUserId(userId);
+  async changePassword(_id: ObjectId, newPassword: string): Promise<void> {
     const hashedPassword = await hashPassword(newPassword);
 
     await this.usersRepository.findOneAndUpdate(
-      { userId },
+      { _id },
       { password: hashedPassword },
     );
   }

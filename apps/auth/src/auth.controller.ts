@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -16,6 +17,8 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth.guard';
 import { HttpResponse } from './@types/http-response';
 import { AuthVerificationDto } from './users/dto/auth-verification.dto';
+import { Response } from 'express';
+import { CheckForPasswordDto } from './users/dto/check-for-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -47,13 +50,18 @@ export class AuthController {
   }
 
   @HttpCode(200)
-  @Post('/verification/:userId')
+  @Post('/verification/password')
   async checkAuthForPassword(
-    @Param('userId') userId: string,
-    @Body() authVerificationDto: AuthVerificationDto,
+    @Body() checkForPasswordDto: CheckForPasswordDto,
+    @Res() res: Response,
   ) {
-    await this.authService.checkAuthForPassword(userId, authVerificationDto);
-    return HttpResponse.success('비밀번호 변경이 가능합니다.');
+    const { impUid, userId } = checkForPasswordDto;
+    const token = await this.authService.checkAuthForPassword(impUid, userId);
+    res.setHeader('Authorization', `Bearer ${token}`);
+    res.json({
+      code: 200,
+      message: '비밀번호 변경이 가능합니다.',
+    });
   }
 
   @HttpCode(200)

@@ -5,14 +5,12 @@ import { Request } from 'express';
 import TokenPayload from '../interfaces/token-payload.interface';
 import { AuthService } from '../auth.service';
 import { NotExpiredAccessTokenException } from '../exceptions/auth.exception';
-import { UsersService } from '../users/users.service';
 import { RedisCacheService } from '@/common';
 
 @Injectable()
 export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
   constructor(
     private readonly authService: AuthService,
-    private readonly usersService: UsersService,
     private readonly redisCacheService: RedisCacheService,
   ) {
     super({

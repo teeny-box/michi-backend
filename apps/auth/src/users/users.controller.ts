@@ -15,6 +15,7 @@ import { JwtAuthGuard } from 'apps/auth/src/guards/jwt-auth.guard';
 import RequestWithUser from 'apps/auth/src/interfaces/request-with-user.interface';
 import { HttpResponse } from '../@types/http-response';
 import { Response } from 'express';
+import { OneTimeAuthGuard } from 'apps/auth/src/guards/one-time-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('users')
@@ -58,9 +59,16 @@ export class UsersController {
   }
 
   @Patch('/password')
-  async changePassword(@Body() changePasswordDto: ChangePasswordDto) {
-    const user = await this.usersService.changePassword(changePasswordDto);
-    return HttpResponse.success('비밀번호 변경이 완료되었습니다.', user);
+  @UseGuards(OneTimeAuthGuard)
+  async changePassword(
+    @Req() req: RequestWithUser,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    await this.usersService.changePassword(
+      req.user._id,
+      changePasswordDto.newPassword,
+    );
+    return HttpResponse.success('비밀번호 변경이 완료되었습니다.');
   }
 
   @Delete()
