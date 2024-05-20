@@ -16,11 +16,12 @@ import {
   UserWithdrawnException,
 } from './exceptions/auth.exception';
 import { UserNotFoundException } from 'apps/auth/src/exceptions/users.exception';
-import * as argon2 from 'argon2';
 import { verifyPassword } from './common/utils/password.utils';
 import { State } from './@types/enums/user.enum';
 import { UsersRepository } from './users/users.repository';
 import { AuthVerificationDto } from './users/dto/auth-verification.dto';
+import { RedisCacheService } from '@/common';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class AuthService {
@@ -30,6 +31,7 @@ export class AuthService {
     private readonly httpService: HttpService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly redisCacheService: RedisCacheService,
   ) {}
 
   // 포트원 -> 출생년도, 폰번호 가져오기
@@ -141,29 +143,29 @@ export class AuthService {
     return user.userId;
   }
 
-  // 비밀번호 변경 전 본인인증 정보와 일치여부 확인
-  async checkAuthForPassword(
-    userId: string,
-    authVerificationDto: AuthVerificationDto,
-  ): Promise<void> {
-    const { userName, phoneNumber, birthYear } = authVerificationDto;
+  // 비밀번호 변경 전 포트원에서 본인인증 정보 가져온 후 회원정보와 일치여부 확인 (일치하면 일회용 토큰 발급)
+  async checkAuthForPassword(impUid: string, userId: string): Promise<string> {
     const user = await this.usersService.findByUserId(userId);
+    const { name, birthYear, phone } = await this.getInfoFromPortOne(impUid);
 
     const isAuthMatch =
-      user.userName === userName &&
-      user.phoneNumber === phoneNumber &&
+      user.userName === name &&
+      user.phoneNumber === phone &&
       user.birthYear === birthYear;
-
     if (!isAuthMatch) {
       throw new UserUnauthorizedException(
         '해당 유저의 본인인증 정보와 일치하지 않습니다.',
       );
     }
+
+    const token = await this.getOneTimeToken(user);
+
+    return token;
   }
 
   // 로그아웃 (db에서 리프레시토큰 삭제)
   async logout(_id: ObjectId): Promise<void> {
-    await this.usersService.clearCurrentRefreshToken(_id);
+    await this.redisCacheService.del(_id.toString());
   }
 
   // access token 생성
@@ -175,14 +177,32 @@ export class AuthService {
     return await this.jwtService.signAsync(payload);
   }
 
-  // refresh token 생성
+  // refresh token 생성 (db에 저장)
   async getRefreshToken(user: User) {
     const payload: TokenPayload = { _id: user._id };
     const token = await this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION_TIME'),
     });
-    await this.usersService.setCurrentRefreshToken(token, user._id);
+
+    const hashedRefreshToken = await argon2.hash(token);
+    await this.redisCacheService.set(
+      user._id.toString(),
+      hashedRefreshToken,
+      this.configService.get<number>('JWT_REFRESH_EXPIRATION_TIME') / 1000,
+    );
+
+    return token;
+  }
+
+  // 일회용 토큰 생성
+  async getOneTimeToken(user: User) {
+    const payload: TokenPayload = { _id: user._id };
+    const token = await this.jwtService.signAsync(payload, {
+      secret: this.configService.get<string>('JWT_ONETIME_SECRET'),
+      expiresIn: this.configService.get<string>('JWT_ONETIME_EXPIRATION_TIME'),
+    });
+
     return token;
   }
 
@@ -199,20 +219,25 @@ export class AuthService {
   // refresh token 검증
   async refreshTokenMatches(refreshToken: string, _id: ObjectId) {
     const user = await this.usersService.findById(_id);
-    // 사용자가 존재하지 않거나 refresh token이 null일 경우
-    if (!user || !user.currentRefreshToken) {
+
+    const currentRefreshToken = await this.redisCacheService.get(
+      _id.toString(),
+    );
+    // db에 리프레시 토큰이 없을 경우 (만료)
+    if (!currentRefreshToken) {
       throw new UserUnauthorizedException('Refresh token expired.');
     }
-    // 유저 DB에 저장된 암호화된 refresh token 값과 받은 refresh token 값 비교
+    // db에 저장된 refresh token 값과 받은 refresh token 값 비교
     const isRefreshTokenMatching = await argon2.verify(
-      user.currentRefreshToken,
+      currentRefreshToken,
       refreshToken,
     );
-    // 사용자가 유효한 리프레시 토큰을 제공했지만, 사용자가 저장한 토큰과 일치하지 않을 때 (탈취되었을 위험)
+    // 사용자가 유효한 리프레시 토큰을 제공했지만, db에 저장된 토큰과 일치하지 않을 때 (탈취되었을 위험)
     if (!isRefreshTokenMatching) {
-      await this.usersService.clearCurrentRefreshToken(_id);
+      await this.redisCacheService.del(_id.toString());
       throw new InvalidTokenException('Invalid refresh token.');
     }
+
     return user;
   }
 }

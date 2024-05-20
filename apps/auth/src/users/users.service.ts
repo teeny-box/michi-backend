@@ -12,12 +12,14 @@ import { ObjectId } from 'mongodb';
 import { hashPassword, verifyPassword } from '../common/utils/password.utils';
 import { State } from '../@types/enums/user.enum';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import * as argon2 from 'argon2';
+import { RedisCacheService } from '@/common';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly redisCacheService: RedisCacheService,
+  ) {}
 
   // 아이디 사용 가능 여부
   async checkUserId(userId: string): Promise<void> {
@@ -93,14 +95,11 @@ export class UsersService {
   }
 
   // 비밀번호 변경
-  async changePassword(changePasswordDto: ChangePasswordDto): Promise<void> {
-    const { userId, newPassword } = changePasswordDto;
-
-    await this.findByUserId(userId);
+  async changePassword(_id: ObjectId, newPassword: string): Promise<void> {
     const hashedPassword = await hashPassword(newPassword);
 
     await this.usersRepository.findOneAndUpdate(
-      { userId },
+      { _id },
       { password: hashedPassword },
     );
   }
@@ -110,29 +109,10 @@ export class UsersService {
     await this.usersRepository.findOneAndUpdate(
       { _id },
       {
-        currentRefreshToken: null,
         state: State.WITHDRAWN,
         deletedAt: new Date(),
       },
     );
-  }
-
-  // refresh token 저장
-  async setCurrentRefreshToken(
-    refreshToken: string,
-    _id: ObjectId,
-  ): Promise<void> {
-    const hashedRefreshToken = await argon2.hash(refreshToken);
-    await this.usersRepository.findOneAndUpdate(
-      { _id },
-      { currentRefreshToken: hashedRefreshToken },
-    );
-  }
-
-  async clearCurrentRefreshToken(_id: ObjectId): Promise<void> {
-    await this.usersRepository.findOneAndUpdate(
-      { _id },
-      { currentRefreshToken: null },
-    );
+    await this.redisCacheService.del(_id.toString());
   }
 }
