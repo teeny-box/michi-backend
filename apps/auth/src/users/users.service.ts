@@ -12,10 +12,14 @@ import { ObjectId } from 'mongodb';
 import { hashPassword, verifyPassword } from '../common/utils/password.utils';
 import { State } from '../@types/enums/user.enum';
 import { CreateUserDto } from './dto/create-user.dto';
+import { RedisCacheService } from '@/common';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly redisCacheService: RedisCacheService,
+  ) {}
 
   // 아이디 사용 가능 여부
   async checkUserId(userId: string): Promise<void> {
@@ -109,5 +113,6 @@ export class UsersService {
         deletedAt: new Date(),
       },
     );
+    await this.redisCacheService.del(_id.toString());
   }
 }

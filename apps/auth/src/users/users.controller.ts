@@ -6,7 +6,6 @@ import {
   Param,
   Patch,
   Req,
-  Res,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -14,7 +13,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'apps/auth/src/guards/jwt-auth.guard';
 import RequestWithUser from 'apps/auth/src/interfaces/request-with-user.interface';
 import { HttpResponse } from '../@types/http-response';
-import { Response } from 'express';
 import { OneTimeAuthGuard } from 'apps/auth/src/guards/one-time-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
@@ -73,10 +71,8 @@ export class UsersController {
 
   @Delete()
   @UseGuards(JwtAuthGuard)
-  async remove(@Req() req: RequestWithUser, @Res() res: Response) {
+  async remove(@Req() req: RequestWithUser) {
     await this.usersService.remove(req.user._id);
-    res.clearCookie('michiAccessToken', { path: '/' });
-    res.clearCookie('michiRefreshToken', { path: '/' });
-    res.json({ code: 200, message: '회원 탈퇴가 완료되었습니다.' });
+    return HttpResponse.success('회원 탈퇴가 완료되었습니다.');
   }
 }
