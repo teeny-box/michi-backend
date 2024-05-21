@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { DatabaseModule } from '@/common';
+import { DatabaseModule, RedisCacheModule, RedisConfigService } from '@/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from 'apps/auth/src/users/schemas/user.schema';
 import * as Joi from 'joi';
@@ -15,6 +15,8 @@ import { RefreshStrategy } from './strategies/refresh.strategy';
 import { UsersModule } from './users/users.module';
 import { UsersService } from './users/users.service';
 import { UsersRepository } from './users/users.repository';
+import { RedisModule } from '@songkeys/nestjs-redis';
+import { OneTimeStrategy } from './strategies/one-time.strategy';
 
 @Module({
   imports: [
@@ -44,6 +46,12 @@ import { UsersRepository } from './users/users.repository';
       }),
       inject: [ConfigService],
     }),
+    RedisModule.forRootAsync({
+      imports: [ConfigModule],
+      useClass: RedisConfigService,
+      inject: [ConfigService],
+    }),
+    RedisCacheModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -51,6 +59,7 @@ import { UsersRepository } from './users/users.repository';
     LocalStrategy,
     JwtStrategy,
     RefreshStrategy,
+    OneTimeStrategy,
     UsersService,
     UsersRepository,
   ],

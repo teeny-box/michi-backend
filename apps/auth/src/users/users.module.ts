@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { ConfigModule } from '@nestjs/config';
-import { DatabaseModule } from '@/common';
+import { DatabaseModule, RedisCacheModule } from '@/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from './schemas/user.schema';
 import { UsersRepository } from './users.repository';
@@ -12,6 +12,7 @@ import { UsersRepository } from './users.repository';
     ConfigModule,
     DatabaseModule,
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+    RedisCacheModule,
   ],
   controllers: [UsersController],
   providers: [UsersService, UsersRepository],

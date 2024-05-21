@@ -31,9 +31,6 @@ export class User extends AbstractDocument {
   @Prop({ type: String, enum: State, required: true, default: State.JOINED })
   state: State;
 
-  @Prop({ type: String, default: null })
-  currentRefreshToken: string;
-
   // @Prop({ type: [{ type: Schema.Types.ObjectId, ref: 'Post' }] })
   // posts: Post[];
 

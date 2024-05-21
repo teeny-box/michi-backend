@@ -5,13 +5,13 @@ import { Request } from 'express';
 import TokenPayload from '../interfaces/token-payload.interface';
 import { AuthService } from '../auth.service';
 import { NotExpiredAccessTokenException } from '../exceptions/auth.exception';
-import { UsersService } from '../users/users.service';
+import { RedisCacheService } from '@/common';
 
 @Injectable()
 export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
   constructor(
     private readonly authService: AuthService,
-    private readonly usersService: UsersService,
+    private readonly redisCacheService: RedisCacheService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -25,7 +25,7 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
     const isAccessTokenExpired =
       await this.authService.isAccessTokenExpired(expiredAccessToken);
     if (!isAccessTokenExpired) {
-      await this.usersService.clearCurrentRefreshToken(payload._id);
+      await this.redisCacheService.del(payload._id.toString());
       throw new NotExpiredAccessTokenException(
         'This is not an expired access token.',
       );
