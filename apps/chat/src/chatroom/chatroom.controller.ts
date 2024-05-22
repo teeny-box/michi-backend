@@ -12,8 +12,11 @@ export class ChatroomController {
   constructor(private readonly chatroomService: ChatroomService) {}
 
   @Get('')
-  async find(@Query() pageOptionsDto?: PageOptionsDto) {
-    const { results, total } = await this.chatroomService.find(pageOptionsDto);
+  async find(
+    @Query('userId') userId?: string,
+    @Query() pageOptionsDto?: PageOptionsDto
+  ) {
+    const { results, total } = await this.chatroomService.find(userId, pageOptionsDto);
     const { data, meta } = new PageDto(
         results.map(chatroom => new ChatroomResponseDto(chatroom)),
         new PageMetaDto(pageOptionsDto, total)
@@ -24,7 +27,6 @@ export class ChatroomController {
 
   /**
    * 채팅방 생성
-   * @param req
    * @param createChatRoomDto
    */
   // @UseGuards(JwtAuthGuard)

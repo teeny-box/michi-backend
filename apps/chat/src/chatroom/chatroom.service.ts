@@ -9,7 +9,10 @@ export class ChatroomService {
       private readonly chatroomRepository: ChatroomRepository
   ) {}
 
-  async find(pageOptionsDto: PageOptionsDto) {
+  async find(userId?: string, pageOptionsDto?: PageOptionsDto) {
+      if (userId) {
+        return await this.chatroomRepository.find({ userIds: { $in: [userId] } }, pageOptionsDto);
+      }
       return await this.chatroomRepository.find({}, pageOptionsDto);
   }
 
