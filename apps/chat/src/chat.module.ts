@@ -5,7 +5,9 @@ import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
 import { DatabaseModule } from '@/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { MessageSchema } from './schemas/message.schema';
+import { ChatSchema } from './schemas/chat.schema';
+import {ChatRepository} from "./chat.repository";
+import {SocketModule} from "@nestjs/websockets/socket-module";
 
 @Module({
   imports: [
@@ -16,10 +18,12 @@ import { MessageSchema } from './schemas/message.schema';
       }),
       envFilePath: './apps/chat/.env',
     }),
+    SocketModule,
     DatabaseModule,
-    MongooseModule.forFeature([{ name: 'Chat', schema: MessageSchema }]),
+    MongooseModule.forFeature([{ name: 'Chat', schema: ChatSchema }]),
   ],
   controllers: [ChatController],
-  providers: [ChatService],
+  providers: [ChatService, ChatRepository],
+  exports: [ChatService],
 })
 export class ChatModule {}
