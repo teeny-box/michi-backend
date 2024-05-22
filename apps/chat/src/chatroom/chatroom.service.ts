@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import {CreateChatroomDto} from "./dto/create-chatroom.dto";
 import {ChatroomRepository} from "./chatroom.repository";
 import {PageOptionsDto} from "@/common/dto/page/page-options.dto";
+import {CreateChatroomDto} from "../dto/create-chatroom.dto";
 
 @Injectable()
 export class ChatroomService {
@@ -9,11 +9,15 @@ export class ChatroomService {
       private readonly chatroomRepository: ChatroomRepository
   ) {}
 
-  async getChatRooms(pageOptionsDto: PageOptionsDto) {
+  async find(pageOptionsDto: PageOptionsDto) {
       return await this.chatroomRepository.find({}, pageOptionsDto);
   }
 
-  async createChatRoom(createChatRoomDto: CreateChatroomDto) {
+  async findOne(chatroomId: string) {
+      return await this.chatroomRepository.findOne({ _id: chatroomId });
+  }
+
+  async create(createChatRoomDto: CreateChatroomDto) {
       return await this.chatroomRepository.create({
         ...createChatRoomDto,
       });
@@ -25,8 +29,9 @@ export class ChatroomService {
 
   async leaveChatRoom(userId: string, chatRoomId: string) {
     const chatroom = await this.chatroomRepository.findOneAndUpdate({ _id: chatRoomId }, { $pull: { userIds: userId } });
-    if (chatroom.userIds.length === 0) {
-      await this.chatroomRepository.findOneAndUpdate({ _id: chatRoomId}, { deletedAt: new Date()});
-    }
+    console.log(chatroom);
+    // if (chatroom.userIds.length === 0) {
+    //   await this.chatroomRepository.findOneAndUpdate({ _id: chatRoomId}, { deletedAt: new Date()});
+    // }
   }
 }

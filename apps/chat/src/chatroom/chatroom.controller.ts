@@ -1,22 +1,19 @@
-import {Body, Controller, Get, Param, Post, Query, Req, UseGuards} from '@nestjs/common';
+import {Body, Controller, Get, Post, Query} from '@nestjs/common';
 import {ChatroomService} from './chatroom.service';
-import {CreateChatroomDto} from "./dto/create-chatroom.dto";
-import {JwtAuthGuard} from "../../auth/src/guards/jwt-auth.guard";
-import RequestWithUser from "../../auth/src/interfaces/request-with-user.interface";
 import {HttpResponse} from "@/common/dto/http-response";
 import {PageOptionsDto} from "@/common/dto/page/page-options.dto";
 import {PageDto} from "@/common/dto/page/page.dto";
-import {ChatroomResponseDto} from "./dto/chatroom-response.dto";
 import {PageMetaDto} from "@/common/dto/page/page-meta.dto";
+import {ChatroomResponseDto} from "../dto/chatroom-response.dto";
+import {CreateChatroomDto} from "../dto/create-chatroom.dto";
 
 @Controller('chatroom')
 export class ChatroomController {
   constructor(private readonly chatroomService: ChatroomService) {}
 
   @Get('')
-  async getChatRooms(@Query() pageOptionsDto?: PageOptionsDto) {
-    console.log(pageOptionsDto);
-    const { results, total } = await this.chatroomService.getChatRooms(pageOptionsDto);
+  async find(@Query() pageOptionsDto?: PageOptionsDto) {
+    const { results, total } = await this.chatroomService.find(pageOptionsDto);
     const { data, meta } = new PageDto(
         results.map(chatroom => new ChatroomResponseDto(chatroom)),
         new PageMetaDto(pageOptionsDto, total)
@@ -32,8 +29,8 @@ export class ChatroomController {
    */
   // @UseGuards(JwtAuthGuard)
   @Post('')
-  async createChatRoom(@Body() createChatRoomDto: CreateChatroomDto) {
-    const result = await this.chatroomService.createChatRoom(createChatRoomDto);
+  async create(@Body() createChatRoomDto: CreateChatroomDto) {
+    const result = await this.chatroomService.create(createChatRoomDto);
     return HttpResponse.success('채팅방이 생성되었습니다.', new ChatroomResponseDto(result));
   }
 }

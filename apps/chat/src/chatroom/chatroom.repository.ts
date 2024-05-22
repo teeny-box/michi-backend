@@ -1,8 +1,8 @@
 import {Injectable, Logger} from "@nestjs/common";
-import {ChatRoom} from "./schemas/chatroom.schema";
 import {AbstractRepository} from "@/common";
 import {InjectConnection, InjectModel} from "@nestjs/mongoose";
 import {Connection, Model} from "mongoose";
+import {ChatRoom} from "../schemas/chatroom.schema";
 
 @Injectable()
 export class ChatroomRepository extends AbstractRepository<ChatRoom> {

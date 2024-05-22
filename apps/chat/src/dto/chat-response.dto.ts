@@ -1,4 +1,4 @@
-import {IsDate, IsNotEmpty, IsString} from "class-validator";
+import {IsNotEmpty, IsString} from "class-validator";
 import {Chat} from "../schemas/chat.schema";
 import {User} from "../../../auth/src/users/schemas/user.schema";
 
@@ -9,7 +9,7 @@ export class ChatResponseDto {
 
   @IsString()
   @IsNotEmpty()
-  readonly username: string;
+  readonly nickname: string;
 
   @IsString()
   @IsNotEmpty()
@@ -17,7 +17,7 @@ export class ChatResponseDto {
 
   constructor(chat: Chat, user: User) {
     this.message = chat.message;
-    this.username = user.nickname;
+    this.nickname = user.nickname;
     this.createdAt = chat.createdAt.toISOString();
   }
 }

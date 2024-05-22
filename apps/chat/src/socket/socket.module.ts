@@ -1,7 +1,5 @@
 import {forwardRef, Module} from "@nestjs/common";
 import {SocketGateway} from "./socket.gateway";
-import {ChatroomModule} from "../chatroom.module";
-import {ChatModule} from "../../../chat/src/chat.module";
 import {UsersModule} from "../../../auth/src/users/users.module";
 import {RedisCacheModule, RedisConfigService} from "@/common";
 import {UsersService} from "../../../auth/src/users/users.service";
@@ -10,6 +8,8 @@ import {ConfigModule, ConfigService} from "@nestjs/config";
 import {UsersRepository} from "../../../auth/src/users/users.repository";
 import {MongooseModule} from "@nestjs/mongoose";
 import {UserSchema} from "../../../auth/src/users/schemas/user.schema";
+import {ChatModule} from "../chat.module";
+import {ChatroomModule} from "../chatroom/chatroom.module";
 
 @Module({
   imports: [

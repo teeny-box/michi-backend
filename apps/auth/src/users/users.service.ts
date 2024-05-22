@@ -71,6 +71,12 @@ export class UsersService {
     return user;
   }
 
+  // userIds로 회원 정보 조회
+  async findByUserIds(userIds: string[]): Promise<User[]> {
+    const { results, total } = await this.usersRepository.find({ userId: { $in: userIds } });
+    return results;
+  }
+
   // 회원 정보 수정
   async update(user: User, updateUserDto: UpdateUserDto): Promise<User> {
     if (updateUserDto.newPassword) {

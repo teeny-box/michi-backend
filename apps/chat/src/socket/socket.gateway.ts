@@ -1,11 +1,11 @@
 import {ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer} from "@nestjs/websockets";
 import {forwardRef, Inject, Logger, OnModuleInit} from "@nestjs/common";
-import {ChatService} from "../../../chat/src/chat.service";
-import {ChatroomService} from "../chatroom.service";
 import {Server, Socket} from "socket.io";
-import {CreateChatDto} from "../../../chat/src/dto/create-chat.dto";
-import {ChatResponseDto} from "../../../chat/src/dto/chat-response.dto";
 import {UsersService} from "../../../auth/src/users/users.service";
+import {ChatService} from "../chat.service";
+import {ChatResponseDto} from "../dto/chat-response.dto";
+import {CreateChatDto} from "../dto/create-chat.dto";
+import {ChatroomService} from "../chatroom/chatroom.service";
 
 @WebSocketGateway({
   namespace: '/socket/chat',
