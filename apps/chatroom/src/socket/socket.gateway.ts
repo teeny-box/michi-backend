@@ -42,6 +42,11 @@ export class SocketGateway implements OnModuleInit {
       // 채팅방 입장
       socket.on('join', async (data) => {
         const {chatroomId, userId} = data;
+        const user = await this.userService.findByUserId(userId);
+
+        if (!user) return;
+
+        socket.data.user = user;
         await this.chatroomService.joinChatRoom(userId, chatroomId);
         socket.join(chatroomId);
         this.server.to(chatroomId).emit('onJoin', {chatroomId, userId});
@@ -49,7 +54,8 @@ export class SocketGateway implements OnModuleInit {
 
       // 채팅방 퇴장
       socket.on('leave', async (data) => {
-        const {chatroomId, userId} = data;
+        const {chatroomId} = data;
+        const userId = socket.data.user.userId;
         await this.chatroomService.leaveChatRoom(userId, chatroomId);
         socket.leave(chatroomId);
         this.server.to(chatroomId).emit('onLeave', {chatroomId, userId});
@@ -65,7 +71,7 @@ export class SocketGateway implements OnModuleInit {
   async handleMessage(@ConnectedSocket() client: Socket, @MessageBody() payload: CreateChatDto) {
     this.logger.log(`client id: ${client.id}`);
     const {message, userId, chatroomId} = payload;
-    const user = await this.userService.findByUserId(userId);
+    const user = client.data.user;
     const chat = await this.chatService.create(payload);
     this.server.to(chatroomId).emit('onMessage', {
       message: '메시지 전송에 성공하였습니다',
