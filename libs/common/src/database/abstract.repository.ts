@@ -48,8 +48,7 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
 
     if (pageOptions && pageOptions.page && pageOptions.pageSize) {
         const { page, pageSize } = pageOptions;
-        const skip = (page - 1) * pageSize;
-        resultsQuery = resultsQuery.skip(skip).limit(pageSize);
+        resultsQuery = resultsQuery.skip(pageOptions.skip).limit(pageSize);
     }
 
     const results = await resultsQuery.exec();
