@@ -9,4 +9,8 @@ export class CreateChatroomDto {
     @IsEnum(ChatRoomType)
     @IsNotEmpty()
     readonly type: ChatRoomType;
+
+    @IsString()
+    @IsNotEmpty()
+    readonly ownerId: string;
 }

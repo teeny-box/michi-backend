@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { AbstractDocument } from '@/common';
 
-@Schema()
+@Schema({ timestamps: true })
 export class Chat extends AbstractDocument {
   @Prop({ type: String })
   message: string;
@@ -11,6 +11,9 @@ export class Chat extends AbstractDocument {
 
   @Prop({ type: String })
   chatroomId: string;
+
+  @Prop({ type: Date })
+  createdAt: Date;
 }
 
 export const ChatSchema = SchemaFactory.createForClass(Chat);

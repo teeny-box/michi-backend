@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {CreateChatroomDto} from "./dto/create-chatroom.dto";
 import {ChatroomRepository} from "./chatroom.repository";
-import {User} from "../../auth/src/users/schemas/user.schema";
 import {PageOptionsDto} from "@/common/dto/page/page-options.dto";
 
 @Injectable()
@@ -14,10 +13,9 @@ export class ChatroomService {
       return await this.chatroomRepository.find({}, pageOptionsDto);
   }
 
-  async createChatRoom(user: User, createChatRoomDto: CreateChatroomDto) {
+  async createChatRoom(createChatRoomDto: CreateChatroomDto) {
       return await this.chatroomRepository.create({
         ...createChatRoomDto,
-        ownerId: user.userId,
       });
   }
 

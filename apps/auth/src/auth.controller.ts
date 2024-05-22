@@ -15,7 +15,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import RequestWithUser from './interfaces/request-with-user.interface';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth.guard';
-import { HttpResponse } from './@types/http-response';
+import { HttpResponse } from '@/common/dto/http-response';
 import { AuthVerificationDto } from './users/dto/auth-verification.dto';
 import { Response } from 'express';
 import { CheckForPasswordDto } from './users/dto/check-for-password.dto';
