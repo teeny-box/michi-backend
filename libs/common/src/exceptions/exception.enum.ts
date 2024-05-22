@@ -17,3 +17,8 @@ export enum AuthExceptionEnum {
   USER_WITHDRAWN = '1031',
   USER_CONFLICT = '1090',
 }
+
+export enum ChatroomExceptionEnum {
+  CHATROOM_BAD_REQUEST = '2000',
+  CHATROOM_NOT_FOUND = '2040',
+}

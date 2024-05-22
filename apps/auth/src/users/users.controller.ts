@@ -12,7 +12,7 @@ import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'apps/auth/src/guards/jwt-auth.guard';
 import RequestWithUser from 'apps/auth/src/interfaces/request-with-user.interface';
-import { HttpResponse } from '../@types/http-response';
+import { HttpResponse } from '@/common/dto/http-response';
 import { OneTimeAuthGuard } from 'apps/auth/src/guards/one-time-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
 

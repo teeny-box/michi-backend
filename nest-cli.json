@@ -36,24 +36,6 @@
       "compilerOptions": {
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
-    },
-    "chatmessage": {
-      "type": "application",
-      "root": "apps/chatmessage",
-      "entryFile": "main",
-      "sourceRoot": "apps/chatmessage/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/chatmessage/tsconfig.app.json"
-      }
-    },
-    "chatroom": {
-      "type": "application",
-      "root": "apps/chatroom",
-      "entryFile": "main",
-      "sourceRoot": "apps/chatroom/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/chatroom/tsconfig.app.json"
-      }
     }
   }
 }

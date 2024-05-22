@@ -14,9 +14,9 @@ describe('ChatController', () => {
     chatController = app.get<ChatController>(ChatController);
   });
 
-  describe('root', () => {
+  describe('find chats by chatroom id', () => {
     it('should return "Hello World!"', () => {
-      expect(chatController.getHello()).toBe('Hello World!');
+      expect(chatController.findAllByChatroomId()).toBe('Hello World!');
     });
   });
 });

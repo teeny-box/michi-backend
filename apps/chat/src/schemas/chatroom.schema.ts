@@ -13,8 +13,8 @@ export class ChatRoom extends AbstractDocument {
     @Prop({ type: String })
     ownerId: string;
 
-    @Prop({ type: String })
-    userIds: string[];
+    @Prop({ type: [String] })
+    userIds: Set<string>;
 
     @Prop({ type: String })
     lastMessageId: string;
