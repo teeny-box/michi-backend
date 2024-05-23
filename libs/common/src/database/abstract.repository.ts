@@ -8,8 +8,7 @@ import {
   Types,
   UpdateQuery,
 } from 'mongoose';
-import {PageOptionsDto} from "@/common/dto/page/page-options.dto";
-import {skip} from "rxjs";
+import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
 
 export abstract class AbstractRepository<TDocument extends AbstractDocument> {
   protected abstract readonly logger: Logger;
@@ -42,13 +41,16 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
     return document;
   }
 
-  async find(filterQuery: FilterQuery<TDocument>, pageOptions?: PageOptionsDto) {
+  async find(
+    filterQuery: FilterQuery<TDocument>,
+    pageOptions?: PageOptionsDto,
+  ) {
     let resultsQuery = this.model.find(filterQuery, {}, { lean: true });
-    let totalQuery = this.model.countDocuments(filterQuery);
+    const totalQuery = this.model.countDocuments(filterQuery);
 
     if (pageOptions && pageOptions.page && pageOptions.pageSize) {
-        const { page, pageSize } = pageOptions;
-        resultsQuery = resultsQuery.skip(pageOptions.skip).limit(pageSize);
+      const { pageSize } = pageOptions;
+      resultsQuery = resultsQuery.skip(pageOptions.skip).limit(pageSize);
     }
 
     const results = await resultsQuery.exec();

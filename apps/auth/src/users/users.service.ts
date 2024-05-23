@@ -73,7 +73,9 @@ export class UsersService {
 
   // userIds로 회원 정보 조회
   async findByUserIds(userIds: string[]): Promise<User[]> {
-    const { results, total } = await this.usersRepository.find({ userId: { $in: userIds } });
+    const { results } = await this.usersRepository.find({
+      userId: { $in: userIds },
+    });
     return results;
   }
 

@@ -1,11 +1,17 @@
-import {ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer} from "@nestjs/websockets";
-import {forwardRef, Inject, Logger, OnModuleInit} from "@nestjs/common";
-import {Server, Socket} from "socket.io";
-import {UsersService} from "../../../auth/src/users/users.service";
-import {ChatService} from "../chat.service";
-import {ChatResponseDto} from "../dto/chat-response.dto";
-import {CreateChatDto} from "../dto/create-chat.dto";
-import {ChatroomService} from "../chatroom/chatroom.service";
+import {
+  ConnectedSocket,
+  MessageBody,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
+import { forwardRef, Inject, Logger, OnModuleInit } from '@nestjs/common';
+import { Server, Socket } from 'socket.io';
+import { UsersService } from '../../../auth/src/users/users.service';
+import { ChatService } from '../chat.service';
+import { ChatResponseDto } from '../dto/chat-response.dto';
+import { CreateChatDto } from '../dto/create-chat.dto';
+import { ChatroomService } from '../chatroom/chatroom.service';
 
 @WebSocketGateway({
   namespace: '/socket/chat',
@@ -41,7 +47,7 @@ export class SocketGateway implements OnModuleInit {
 
       // 채팅방 입장
       socket.on('join', async (data) => {
-        const {chatroomId, userId} = data;
+        const { chatroomId, userId } = data;
         const user = await this.userService.findByUserId(userId);
 
         if (!user) return;
@@ -49,16 +55,16 @@ export class SocketGateway implements OnModuleInit {
         socket.data.user = user;
         await this.chatroomService.joinChatRoom(userId, chatroomId);
         socket.join(chatroomId);
-        this.server.to(chatroomId).emit('onJoin', {chatroomId, userId});
+        this.server.to(chatroomId).emit('onJoin', { chatroomId, userId });
       });
 
       // 채팅방 퇴장
       socket.on('leave', async (data) => {
-        const {chatroomId} = data;
+        const { chatroomId } = data;
         const userId = socket.data.user.userId;
         await this.chatroomService.leaveChatRoom(userId, chatroomId);
         socket.leave(chatroomId);
-        this.server.to(chatroomId).emit('onLeave', {chatroomId, userId});
+        this.server.to(chatroomId).emit('onLeave', { chatroomId, userId });
         socket.disconnect(true);
       });
     });
@@ -68,14 +74,17 @@ export class SocketGateway implements OnModuleInit {
    * message 로 보내면, onMessage 로 받음
    */
   @SubscribeMessage('message')
-  async handleMessage(@ConnectedSocket() client: Socket, @MessageBody() payload: CreateChatDto) {
+  async handleMessage(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: CreateChatDto,
+  ) {
     this.logger.log(`client id: ${client.id}`);
-    const {message, userId, chatroomId} = payload;
+    const { chatroomId } = payload;
     const user = client.data.user;
     const chat = await this.chatService.create(payload);
     this.server.to(chatroomId).emit('onMessage', {
       message: '메시지 전송에 성공하였습니다',
-      data: new ChatResponseDto(chat, user)
+      data: new ChatResponseDto(chat, user),
     });
   }
 }
