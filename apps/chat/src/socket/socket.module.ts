@@ -10,6 +10,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from '../../../auth/src/users/schemas/user.schema';
 import { ChatModule } from '../chat.module';
 import { ChatroomModule } from '../chatroom/chatroom.module';
+import {StatusGateway} from "@chat/socket/status.gateway";
 
 @Module({
   imports: [
@@ -24,6 +25,6 @@ import { ChatroomModule } from '../chatroom/chatroom.module';
     RedisCacheModule,
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
   ],
-  providers: [SocketGateway, UsersService, UsersRepository],
+  providers: [SocketGateway, StatusGateway, UsersService, UsersRepository],
 })
 export class SocketModule {}

@@ -15,10 +15,14 @@ import RequestWithUser from 'apps/auth/src/interfaces/request-with-user.interfac
 import { HttpResponse } from '@/common/dto/http-response';
 import { OneTimeAuthGuard } from 'apps/auth/src/guards/one-time-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import {RedisCacheService} from "@/common";
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly redisCacheService: RedisCacheService,
+  ) {}
 
   @Get('/id-check/:userId')
   async checkUserId(@Param('userId') userId: string) {
@@ -74,5 +78,12 @@ export class UsersController {
   async remove(@Req() req: RequestWithUser) {
     await this.usersService.remove(req.user._id);
     return HttpResponse.success('회원 탈퇴가 완료되었습니다.');
+  }
+
+  @Get('online')
+  @UseGuards(JwtAuthGuard)
+  async getOnlineUsers() {
+    const onlineUsers = await this.redisCacheService.getOnlineUsers();
+    return HttpResponse.success('온라인 사용자 목록이 조회되었습니다.', onlineUsers);
   }
 }
