@@ -44,6 +44,7 @@ describe('ChatController', () => {
 
   describe('findAllByChatroomId', () => {
     it('it should return chat messages with user information', async () => {
+      // Given
       const chatroomId = 'chatroomId';
       const pageOptionsDto: PageOptionsDto = {
         page: 1,
@@ -54,14 +55,14 @@ describe('ChatController', () => {
       };
       const chats: Chat[] = [
         {
-          _id: new ObjectId('chat1'),
+          _id: new ObjectId('664e1bdc14426cbe69b15ce9'),
           chatroomId: chatroomId,
           userId: 'user1',
           message: 'Hello, World!',
           createdAt: new Date(),
         },
         {
-          _id: new ObjectId('chat2'),
+          _id: new ObjectId('664e1bdc14426cbe69b15c14'),
           chatroomId: chatroomId,
           userId: 'user2',
           message: 'Hi, there!',
@@ -71,7 +72,7 @@ describe('ChatController', () => {
       const total = chats.length;
       const users: User[] = [
         {
-          _id: new ObjectId('user1'),
+          _id: new ObjectId('664e1bdc14426cbe69b343e9'),
           userId: 'user1',
           userName: 'Alice',
           nickname: 'Alice',
@@ -84,7 +85,7 @@ describe('ChatController', () => {
           deletedAt: null,
         },
         {
-          _id: new ObjectId('user2'),
+          _id: new ObjectId('664e1bd3e4426cbe69b343e9'),
           userId: 'user2',
           userName: 'Bob',
           nickname: 'Bob',
@@ -101,11 +102,13 @@ describe('ChatController', () => {
       mockChatService.find.mockResolvedValue({ results: chats, total });
       mockUsersService.findByUserIds.mockResolvedValue(users);
 
+      // When
       const result = await chatController.findAllByChatroomId(
         chatroomId,
         pageOptionsDto,
       );
 
+      // Then
       const userMap = new Map(users.map((user) => [user.userId, user]));
       const expectedChats = chats.map(
         (chat) => new ChatResponseDto(chat, userMap.get(chat.userId)),
