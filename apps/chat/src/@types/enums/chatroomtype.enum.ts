@@ -1,4 +1,4 @@
 export enum ChatRoomType {
-    PRIVATE = 'private',
-    GROUP = 'group',
+  PRIVATE = 'private',
+  GROUP = 'group',
 }

@@ -1,6 +1,6 @@
-import {IsNotEmpty, IsString} from "class-validator";
-import {Chat} from "../schemas/chat.schema";
-import {User} from "../../../auth/src/users/schemas/user.schema";
+import { IsNotEmpty, IsString } from 'class-validator';
+import { Chat } from '../schemas/chat.schema';
+import { User } from '../../../auth/src/users/schemas/user.schema';
 
 export class ChatResponseDto {
   @IsString()

@@ -1,4 +1,4 @@
-import { UserUnauthorizedException } from 'apps/auth/src/exceptions/auth.exception';
+import { UserUnauthorizedException } from '@auth/exceptions/auth.exception';
 import * as bcrypt from 'bcrypt';
 
 // 비밀번호 해싱

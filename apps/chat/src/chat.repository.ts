@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AbstractRepository } from '@/common';
-import {Chat} from './schemas/chat.schema';
+import { Chat } from './schemas/chat.schema';
 import { Connection, Model } from 'mongoose';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 

@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import {ChatRepository} from "./chat.repository";
-import {CreateChatDto} from "./dto/create-chat.dto";
-import {PageOptionsDto} from "@/common/dto/page/page-options.dto";
-import {ChatroomService} from "./chatroom/chatroom.service";
-import {ChatroomNotFoundException} from "./exceptions/chatroom.exception";
+import { ChatRepository } from './chat.repository';
+import { CreateChatDto } from './dto/create-chat.dto';
+import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
+import { ChatroomService } from './chatroom/chatroom.service';
+import { ChatroomNotFoundException } from './exceptions/chatroom.exception';
 
 @Injectable()
 export class ChatService {
   constructor(
     private readonly chatroomService: ChatroomService,
-    private readonly chatRepository: ChatRepository
+    private readonly chatRepository: ChatRepository,
   ) {}
 
   async find(chatroomId: string, pageOptionsDto?: PageOptionsDto) {
