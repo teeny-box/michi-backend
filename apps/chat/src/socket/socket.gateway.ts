@@ -7,11 +7,14 @@ import {
 } from '@nestjs/websockets';
 import { forwardRef, Inject, Logger, OnModuleInit } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { UsersService } from '../../../auth/src/users/users.service';
+import { UsersService } from '@auth/users/users.service';
 import { ChatService } from '../chat.service';
 import { ChatResponseDto } from '../dto/chat-response.dto';
 import { CreateChatDto } from '../dto/create-chat.dto';
 import { ChatroomService } from '../chatroom/chatroom.service';
+import {UserNotFoundException} from "@auth/exceptions/users.exception";
+import {ChatroomNotFoundException} from "@chat/exceptions/chatroom.exception";
+import {UserResponseDto} from "@auth/users/dto/user-response.dto";
 
 @WebSocketGateway({
   namespace: '/socket/chat',
@@ -41,21 +44,27 @@ export class SocketGateway implements OnModuleInit {
    * - leave: 클라이언트가 채팅방에서 퇴장할 때 발생하는 이벤트 (leave 로 보내고 onLeave 로 받음)
    * @returns {void}
    */
-  onModuleInit() {
+  onModuleInit(): void {
     this.server.on('connection', (socket) => {
       this.logger.log(`Client connected: ${socket.id}`);
 
       // 채팅방 입장
       socket.on('join', async (data) => {
         const { chatroomId, userId } = data;
-        const user = await this.userService.findByUserId(userId);
 
-        if (!user) return;
+        const user = await this.userService.findByUserId(userId);
+        if (!user) throw new UserNotFoundException("해당 유저를 찾을 수 없습니다");
+
+        const chatroom = await this.chatroomService.findOne(chatroomId);
+        if (!chatroom) throw new ChatroomNotFoundException("채팅방을 찾을 수 없습니다");
 
         socket.data.user = user;
         await this.chatroomService.joinChatRoom(userId, chatroomId);
         socket.join(chatroomId);
-        this.server.to(chatroomId).emit('onJoin', { chatroomId, userId });
+        this.server.to(chatroomId).emit('onJoin', {
+          message: `${user.nickname}님이 입장하셨습니다`,
+          data: new UserResponseDto(user)
+        });
       });
 
       // 채팅방 퇴장
@@ -64,7 +73,9 @@ export class SocketGateway implements OnModuleInit {
         const userId = socket.data.user.userId;
         await this.chatroomService.leaveChatRoom(userId, chatroomId);
         socket.leave(chatroomId);
-        this.server.to(chatroomId).emit('onLeave', { chatroomId, userId });
+        this.server.to(chatroomId).emit('onLeave', {
+          message: `${socket.data.user.nickname}님이 퇴장하셨습니다`,
+        });
         socket.disconnect(true);
       });
     });

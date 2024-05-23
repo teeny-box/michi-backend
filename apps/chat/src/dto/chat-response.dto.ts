@@ -1,15 +1,18 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 import { Chat } from '../schemas/chat.schema';
-import { User } from '../../../auth/src/users/schemas/user.schema';
+import { User } from '@auth/users/schemas/user.schema';
+import {UserResponseDto} from "@auth/users/dto/user-response.dto";
 
 export class ChatResponseDto {
   @IsString()
   @IsNotEmpty()
   readonly message: string;
 
-  @IsString()
-  @IsNotEmpty()
-  readonly nickname: string;
+  readonly user: UserResponseDto;
+
+  // @IsString()
+  // @IsNotEmpty()
+  // readonly nickname: string;
 
   @IsString()
   @IsNotEmpty()
@@ -17,7 +20,8 @@ export class ChatResponseDto {
 
   constructor(chat: Chat, user: User) {
     this.message = chat.message;
-    this.nickname = user.nickname;
+    // this.nickname = user.nickname;
+    this.user = new UserResponseDto(user);
     this.createdAt = chat.createdAt.toISOString();
   }
 }
