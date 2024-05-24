@@ -1,5 +1,4 @@
 import { ChatRoomType } from '../@types/enums/chatroomtype.enum';
-import { User } from '../../../auth/src/users/schemas/user.schema';
 import { ChatRoom } from '../schemas/chatroom.schema';
 import { Types } from 'mongoose';
 
@@ -7,7 +6,6 @@ export class ChatroomResponseDto {
   readonly id: Types.ObjectId;
   readonly title: string;
   readonly type: ChatRoomType;
-  readonly owner: User;
   readonly lastMessage: string;
   readonly createdAt: Date;
   readonly updatedAt: Date;

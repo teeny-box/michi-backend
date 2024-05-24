@@ -17,4 +17,19 @@ export class RedisCacheService {
   async del(key: string): Promise<number> {
     return this.redisClient.del(key);
   }
+
+  /**
+   * 사용자 온라인 관련 메서드들
+   */
+  async setUserOnline(userId: string): Promise<void> {
+    await this.redisClient.sadd('online_users', userId);
+  }
+
+  async setUserOffline(userId: string): Promise<void> {
+    await this.redisClient.srem('online_users', userId);
+  }
+
+  async getOnlineUsers(): Promise<string[]> {
+    return this.redisClient.smembers('online_users');
+  }
 }
