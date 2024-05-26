@@ -4,7 +4,7 @@ import {
   Delete,
   Get,
   Param,
-  Patch,
+  Patch, Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -16,6 +16,7 @@ import { HttpResponse } from '@/common/dto/http-response';
 import { OneTimeAuthGuard } from 'apps/auth/src/guards/one-time-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import {RedisCacheService} from "@/common";
+import {RegisterFcmTokenDto} from "@auth/users/dto/register-fcm-token.dto";
 
 @Controller('users')
 export class UsersController {
@@ -85,5 +86,12 @@ export class UsersController {
   async getOnlineUsers() {
     const onlineUsers = await this.redisCacheService.getOnlineUsers();
     return HttpResponse.success('온라인 사용자 목록이 조회되었습니다.', onlineUsers);
+  }
+
+  @Post('/fcm-token')
+  @UseGuards(JwtAuthGuard)
+  async registerFcmToken(@Req() req: RequestWithUser, @Body() registerFcmTokenDto: RegisterFcmTokenDto) {
+    await this.usersService.registerFcmToken(req.user.userId, registerFcmTokenDto.token);
+    return HttpResponse.success('FCM 토큰 등록이 완료되었습니다.');
   }
 }
