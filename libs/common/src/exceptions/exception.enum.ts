@@ -22,3 +22,7 @@ export enum ChatroomExceptionEnum {
   CHATROOM_BAD_REQUEST = '2000',
   CHATROOM_NOT_FOUND = '2040',
 }
+
+export enum NotificationExceptionEnum {
+  FCM_SEND_FAILED = '3100',
+}

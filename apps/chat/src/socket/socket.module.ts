@@ -11,6 +11,7 @@ import { UserSchema } from '../../../auth/src/users/schemas/user.schema';
 import { ChatModule } from '../chat.module';
 import { ChatroomModule } from '../chatroom/chatroom.module';
 import {StatusGateway} from "@chat/socket/status.gateway";
+import {NotificationModule} from "@/common/notification/notification.module";
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import {StatusGateway} from "@chat/socket/status.gateway";
     }),
     RedisCacheModule,
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+    NotificationModule,
   ],
   providers: [SocketGateway, StatusGateway, UsersService, UsersRepository],
 })
