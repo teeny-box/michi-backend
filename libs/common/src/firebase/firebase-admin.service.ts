@@ -1,7 +1,7 @@
-import {Injectable} from "@nestjs/common";
-import * as admin from "firebase-admin";
+import { Injectable } from '@nestjs/common';
+import * as admin from 'firebase-admin';
 import * as firebaseConfig from './firebase.config.json';
-import {FirebaseException} from "@/common/firebase/firebase.exception";
+import { FirebaseException } from '@/common/firebase/firebase.exception';
 
 const firebase_params = {
   type: firebaseConfig.type,
@@ -21,7 +21,7 @@ export class FirebaseAdminService {
   constructor() {
     admin.initializeApp({
       credential: admin.credential.cert(firebase_params),
-    })
+    });
   }
 
   async sendPushNotification(token: string, title: string, message: string) {
@@ -30,13 +30,13 @@ export class FirebaseAdminService {
       data: {
         title: title,
         body: message,
-      }
-    }
+      },
+    };
 
     try {
-      return await admin.messaging().send(payload)
+      return await admin.messaging().send(payload);
     } catch (error) {
-      throw new FirebaseException(error.message)
+      throw new FirebaseException(error.message);
     }
   }
 }

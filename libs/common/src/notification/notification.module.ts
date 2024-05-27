@@ -1,7 +1,7 @@
-import {Module} from "@nestjs/common";
-import {ConfigModule} from "@nestjs/config";
-import {BullModule} from "@nestjs/bull";
-import {FirebaseAdminService} from "@/common/firebase/firebase-admin.service";
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { BullModule } from '@nestjs/bull';
+import { FirebaseAdminService } from '@/common/firebase/firebase-admin.service';
 
 @Module({
   imports: [
@@ -10,11 +10,11 @@ import {FirebaseAdminService} from "@/common/firebase/firebase-admin.service";
       redis: {
         host: process.env.REDIS_HOST,
         port: parseInt(process.env.REDIS_PORT),
-      }
+      },
     }),
     BullModule.registerQueue({
       name: 'notification',
-    })
+    }),
   ],
   providers: [FirebaseAdminService],
   exports: [BullModule],

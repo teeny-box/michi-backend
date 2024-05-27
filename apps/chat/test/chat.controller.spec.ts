@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ChatController } from './chat.controller';
-import { ChatService } from './chat.service';
 import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
-import { ChatResponseDto } from './dto/chat-response.dto';
 import { PageMetaDto } from '@/common/dto/page/page-meta.dto';
 import { HttpResponse } from '@/common/dto/http-response';
-import { Chat } from './schemas/chat.schema';
 import { ObjectId } from 'mongodb';
 import { UsersService } from '@auth/users/users.service';
 import { User } from '@auth/users/schemas/user.schema';
 import { Role, State } from '@auth/@types/enums/user.enum';
+import {ChatController} from "@chat/chat.controller";
+import {ChatService} from "@chat/chat.service";
+import {Chat} from "@chat/schemas/chat.schema";
+import {ChatResponseDto} from "@chat/dto/chat-response.dto";
 
 describe('ChatController', () => {
   let chatController: ChatController;

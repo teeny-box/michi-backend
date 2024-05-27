@@ -32,7 +32,7 @@ export class User extends AbstractDocument {
   state: State;
 
   @Prop({ type: String, default: null })
-  fcmToken: string;
+  fcmToken?: string;
 
   // @Prop({ type: [{ type: Schema.Types.ObjectId, ref: 'Post' }] })
   // posts: Post[];

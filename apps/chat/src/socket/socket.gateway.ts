@@ -12,11 +12,11 @@ import { ChatService } from '../chat.service';
 import { ChatResponseDto } from '../dto/chat-response.dto';
 import { CreateChatDto } from '../dto/create-chat.dto';
 import { ChatroomService } from '../chatroom/chatroom.service';
-import {UserNotFoundException} from "@auth/exceptions/users.exception";
-import {ChatroomNotFoundException} from "@chat/exceptions/chatroom.exception";
-import {UserResponseDto} from "@auth/users/dto/user-response.dto";
-import {InjectQueue} from "@nestjs/bull";
-import {Queue} from "bull";
+import { UserNotFoundException } from '@auth/exceptions/users.exception';
+import { ChatroomNotFoundException } from '@chat/exceptions/chatroom.exception';
+import { UserResponseDto } from '@auth/users/dto/user-response.dto';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 const WELCOME_MESSAGE = '님이 입장하셨습니다';
 const GOODBYE_MESSAGE = '님이 퇴장하셨습니다';
@@ -73,21 +73,25 @@ export class SocketGateway implements OnModuleInit {
     });
   }
 
-  private async handleJoin(socket: Socket, data: { chatroomId: string, userId: string }) {
+  private async handleJoin(
+    socket: Socket,
+    data: { chatroomId: string; userId: string },
+  ) {
     const { chatroomId, userId } = data;
 
     const user = await this.userService.findByUserId(userId);
-    if (!user) throw new UserNotFoundException("해당 유저를 찾을 수 없습니다");
+    if (!user) throw new UserNotFoundException('해당 유저를 찾을 수 없습니다');
 
     const chatroom = await this.chatroomService.findOne(chatroomId);
-    if (!chatroom) throw new ChatroomNotFoundException("채팅방을 찾을 수 없습니다");
+    if (!chatroom)
+      throw new ChatroomNotFoundException('채팅방을 찾을 수 없습니다');
 
     socket.data.user = user;
     await this.chatroomService.joinChatRoom(userId, chatroomId);
     socket.join(chatroomId);
     this.server.to(chatroomId).emit('onJoin', {
       message: `${user.nickname}${WELCOME_MESSAGE}`,
-      data: new UserResponseDto(user)
+      data: new UserResponseDto(user),
     });
   }
 
@@ -114,7 +118,7 @@ export class SocketGateway implements OnModuleInit {
     this.logger.log(`client id: ${client.id}`);
 
     try {
-      const {chatroomId} = payload;
+      const { chatroomId } = payload;
       const user = client.data.user;
       const chat = await this.chatService.create(payload);
 
@@ -129,7 +133,7 @@ export class SocketGateway implements OnModuleInit {
         token: user.fcmToken,
         title: NEW_MESSAGE_TITLE,
         body: `${user.nickname} : ${chat.message}`,
-      }
+      };
 
       // Add job to queue
       await this.notificationQueue.add(notificationData);
