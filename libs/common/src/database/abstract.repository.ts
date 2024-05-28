@@ -44,9 +44,21 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
   async find(
     filterQuery: FilterQuery<TDocument>,
     pageOptions?: PageOptionsDto,
+    sortOptions?: Record<string, 1 | -1>,
   ) {
+    if (this.model.schema.paths['deletedAt']) {
+      filterQuery = {
+        ...filterQuery,
+        deletedAt: null,
+      };
+    }
+
     let resultsQuery = this.model.find(filterQuery, {}, { lean: true });
     const totalQuery = this.model.countDocuments(filterQuery);
+
+    if (sortOptions) {
+      resultsQuery = resultsQuery.sort(sortOptions);
+    }
 
     if (pageOptions && pageOptions.page && pageOptions.pageSize) {
       const { pageSize } = pageOptions;
