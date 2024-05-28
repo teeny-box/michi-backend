@@ -22,3 +22,8 @@ export enum ChatroomExceptionEnum {
   CHATROOM_BAD_REQUEST = '2000',
   CHATROOM_NOT_FOUND = '2040',
 }
+
+export enum PostExceptionEnum {
+  POST_FORBIDDEN = '3030',
+  POST_NOT_FOUND = '3040',
+}
