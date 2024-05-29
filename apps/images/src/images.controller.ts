@@ -27,6 +27,7 @@ export class ImagesController {
     const command = new PutObjectCommand({
       Bucket: this.configService.get('AWS_S3_BUCKET'),
       Key: key,
+      ACL: 'public-read',
     });
 
     const signedUrl = await getSignedUrl(s3Client, command, {
