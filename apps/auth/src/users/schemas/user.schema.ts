@@ -31,11 +31,11 @@ export class User extends AbstractDocument {
   @Prop({ type: String, enum: State, required: true, default: State.JOINED })
   state: State;
 
-  // @Prop({ type: [{ type: Schema.Types.ObjectId, ref: 'Post' }] })
-  // posts: Post[];
+  @Prop({ type: Date })
+  createdAt: Date;
 
-  // @Prop({ type: [{ type: Schema.Types.ObjectId, ref: 'ChatRoom' }] })
-  // chatRooms: ChatRoom[];
+  @Prop({ type: Date })
+  updatedAt: Date;
 
   @Prop({ type: Date, default: null })
   deletedAt: Date | null;

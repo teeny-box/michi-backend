@@ -1,4 +1,4 @@
-import { UserUnauthorizedException } from '@auth/exceptions/auth.exception';
+import { PasswordMismatchException } from '@auth/exceptions/auth.exception';
 import * as bcrypt from 'bcrypt';
 
 // 비밀번호 해싱
@@ -17,6 +17,6 @@ export async function verifyPassword(
     hashedPassword,
   );
   if (!isMatchPassword) {
-    throw new UserUnauthorizedException('비밀번호가 일치하지 않습니다.');
+    throw new PasswordMismatchException('비밀번호가 일치하지 않습니다.');
   }
 }

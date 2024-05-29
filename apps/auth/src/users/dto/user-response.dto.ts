@@ -24,6 +24,15 @@ export class UserResponseDto {
   @Expose()
   readonly state: State;
 
+  @Expose()
+  readonly createdAt: Date;
+
+  @Expose()
+  readonly updatedAt: Date;
+
+  @Expose()
+  readonly deletedAt?: Date | null;
+
   constructor(user: User) {
     this.userId = user.userId;
     this.nickname = user.nickname;
@@ -32,5 +41,8 @@ export class UserResponseDto {
     this.phoneNumber = user.phoneNumber;
     this.role = user.role;
     this.state = user.state;
+    this.createdAt = user.createdAt;
+    this.updatedAt = user.updatedAt;
+    this.deletedAt = user.deletedAt;
   }
 }
