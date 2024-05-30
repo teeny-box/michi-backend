@@ -9,3 +9,6 @@ export * from './exceptions/uncatch.exception';
 export * from './config/redis-cache.config';
 export * from './redis-cache/redis-cache.module';
 export * from './redis-cache/redis-cache.service';
+export * from './counter/counter.module';
+export * from './counter/counter.service';
+export * from './counter/schemas/counter.schema';

@@ -23,6 +23,7 @@
       "@/common/*": ["libs/common/src/*"],
       "@auth/*": ["apps/auth/src/*"],
       "@chat/*": ["apps/chat/src/*"],
+      "@posts/*": ["apps/posts/src/*"]
     }
   }
 }

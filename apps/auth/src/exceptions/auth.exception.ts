@@ -27,6 +27,16 @@ export class InvalidTokenException extends BaseException {
   }
 }
 
+export class PasswordMismatchException extends BaseException {
+  constructor(message: string) {
+    super(
+      AuthExceptionEnum.PASSWORD_MISMATCH,
+      HttpStatus.UNAUTHORIZED,
+      message,
+    );
+  }
+}
+
 export class UserForbiddenException extends BaseException {
   constructor(message: string) {
     super(AuthExceptionEnum.USER_FORBIDDEN, HttpStatus.FORBIDDEN, message);

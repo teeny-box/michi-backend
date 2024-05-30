@@ -13,12 +13,15 @@ import { hashPassword, verifyPassword } from '../common/utils/password.utils';
 import { State } from '../@types/enums/user.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RedisCacheService } from '@/common';
+import { deleteFiles } from '@/common/utils/s3.utils';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly redisCacheService: RedisCacheService,
+    private readonly configService: ConfigService,
   ) {}
 
   // 아이디 사용 가능 여부
@@ -81,6 +84,10 @@ export class UsersService {
 
   // 회원 정보 수정
   async update(user: User, updateUserDto: UpdateUserDto): Promise<User> {
+    if (updateUserDto.imageUrlsToDelete) {
+      await deleteFiles(this.configService, updateUserDto.imageUrlsToDelete);
+    }
+
     if (updateUserDto.newPassword) {
       if (!updateUserDto.password) {
         throw new UserBadRequestException('비밀번호를 입력해야 합니다.');

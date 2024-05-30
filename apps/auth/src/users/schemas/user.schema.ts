@@ -34,11 +34,11 @@ export class User extends AbstractDocument {
   @Prop({ type: String, default: null })
   fcmToken?: string;
 
-  // @Prop({ type: [{ type: Schema.Types.ObjectId, ref: 'Post' }] })
-  // posts: Post[];
+  @Prop({ type: Date })
+  createdAt: Date;
 
-  // @Prop({ type: [{ type: Schema.Types.ObjectId, ref: 'ChatRoom' }] })
-  // chatRooms: ChatRoom[];
+  @Prop({ type: Date })
+  updatedAt: Date;
 
   @Prop({ type: Date, default: null })
   deletedAt: Date | null;

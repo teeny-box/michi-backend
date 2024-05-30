@@ -6,10 +6,10 @@ import { ObjectId } from 'mongodb';
 import { UsersService } from '@auth/users/users.service';
 import { User } from '@auth/users/schemas/user.schema';
 import { Role, State } from '@auth/@types/enums/user.enum';
-import {ChatController} from "@chat/chat.controller";
-import {ChatService} from "@chat/chat.service";
-import {Chat} from "@chat/schemas/chat.schema";
-import {ChatResponseDto} from "@chat/dto/chat-response.dto";
+import { ChatController } from '@chat/chat.controller';
+import { ChatService } from '@chat/chat.service';
+import { Chat } from '@chat/schemas/chat.schema';
+import { ChatResponseDto } from '@chat/dto/chat-response.dto';
 
 describe('ChatController', () => {
   let chatController: ChatController;
