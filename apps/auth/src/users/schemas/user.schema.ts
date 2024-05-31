@@ -31,6 +31,9 @@ export class User extends AbstractDocument {
   @Prop({ type: String, enum: State, required: true, default: State.JOINED })
   state: State;
 
+  @Prop({ type: String, default: null })
+  fcmToken?: string;
+
   @Prop({ type: Date })
   createdAt: Date;
 

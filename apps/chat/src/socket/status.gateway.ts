@@ -1,9 +1,14 @@
-import {OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer} from "@nestjs/websockets";
-import {Server, Socket} from "socket.io";
-import {Logger} from "@nestjs/common";
-import {UsersService} from "@auth/users/users.service";
-import {RedisCacheService} from "@/common";
-import {Status} from "@/common/@types/enums/common.enum";
+import {
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
+import { Logger } from '@nestjs/common';
+import { UsersService } from '@auth/users/users.service';
+import { RedisCacheService } from '@/common';
+import { Status } from '@/common/@types/enums/common.enum';
 
 @WebSocketGateway({
   namespace: '/socket/status',
