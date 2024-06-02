@@ -1,6 +1,9 @@
 # Stage 1: Build
 FROM node:18-alpine AS builder
 
+# Install Python and build-essential
+RUN apk add --no-cache python3 make g++
+
 # Set working directory
 WORKDIR /app
 
@@ -23,9 +26,9 @@ FROM node:18-alpine AS base
 WORKDIR /app
 
 # Copy only the necessary files from the builder stage
-COPY --from=builder /michi/dist ./dist
-COPY --from=builder /michi/node_modules ./node_modules
-COPY --from=builder /michi/package*.json ./
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
 
 # Expose the port
 EXPOSE 5001
