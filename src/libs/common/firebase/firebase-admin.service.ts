@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
-import * as firebaseConfig from './firebase.config.json';
+import * as firebaseConfig from './firebase.config.json'; // eslint-disable-line
 import { FirebaseException } from '@/libs/common/firebase/firebase.exception';
 
 const firebase_params = {
