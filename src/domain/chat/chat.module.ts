@@ -15,6 +15,7 @@ import { ChatroomModule } from './chatroom/chatroom.module';
 import { ChatController } from './chat.controller';
 import { ChatroomService } from './chatroom/chatroom.service';
 import { ChatroomRepository } from './chatroom/chatroom.repository';
+import { StatusGateway } from '@/domain/chat/socket/status.gateway';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ChatroomRepository } from './chatroom/chatroom.repository';
     ChatroomRepository,
     UsersService,
     UsersRepository,
+    StatusGateway,
   ],
   exports: [ChatService],
 })

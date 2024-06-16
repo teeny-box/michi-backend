@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { PageOptionsDto } from '@/libs/common/dto/page/page-options.dto';
 import { PageDto } from '@/libs/common/dto/page/page.dto';
@@ -48,7 +56,7 @@ export class ChatController {
     return HttpResponse.success(`조회가 완료되었습니다.`, data, meta);
   }
 
-  @Get('random')
+  @Post('random')
   @UseGuards(JwtAuthGuard)
   async requestRandomChat(@Req() req: RequestWithUser) {
     const sender = req.user.userId;

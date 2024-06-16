@@ -93,13 +93,12 @@
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
     "roots": [
-      "<rootDir>/apps/",
+      "<rootDir>/src/",
       "<rootDir>/libs/"
     ],
     "moduleNameMapper": {
-      "^@/common(|/.*)$": "<rootDir>/libs/common/src/$1",
-      "^@auth/(.*)$": "<rootDir>/apps/auth/src/$1",
-      "^@chat/(.*)$": "<rootDir>/apps/chat/src/$1"
+      "@/(.*)$": "<rootDir>/src/$1",
+      "^@/common(|/.*)$": "<rootDir>/libs/common/$1"
     }
   }
 }
