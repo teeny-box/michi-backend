@@ -10,3 +10,13 @@ export class ChatroomNotFoundException extends BaseException {
     );
   }
 }
+
+export class NotEnoughUserInChatQueueException extends BaseException {
+  constructor(message: string) {
+    super(
+      ChatroomExceptionEnum.NOT_ENOUGH_USER_IN_CHAT_QUEUE,
+      HttpStatus.BAD_REQUEST,
+      message,
+    );
+  }
+}

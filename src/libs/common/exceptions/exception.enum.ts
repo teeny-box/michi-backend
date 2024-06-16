@@ -21,6 +21,7 @@ export enum AuthExceptionEnum {
 
 export enum ChatroomExceptionEnum {
   CHATROOM_BAD_REQUEST = '2000',
+  NOT_ENOUGH_USER_IN_CHAT_QUEUE = '2001',
   CHATROOM_NOT_FOUND = '2040',
 }
 

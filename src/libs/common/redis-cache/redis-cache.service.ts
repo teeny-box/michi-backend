@@ -32,4 +32,17 @@ export class RedisCacheService {
   async getOnlineUsers(): Promise<string[]> {
     return this.redisClient.smembers('online_users');
   }
+
+  /**
+   * 채팅 큐 관련 메서드들
+   */
+  async addUserToChatQueue(userId: string): Promise<void> {
+    await this.redisClient.lpush('chat_queue', userId);
+  }
+  async removeUserFromChatQueue(userId: string): Promise<void> {
+    await this.redisClient.lrem('chat_queue', 0, userId);
+  }
+  async getNextUserFromChatQueue(): Promise<string> {
+    return this.redisClient.rpop('chat_queue');
+  }
 }
