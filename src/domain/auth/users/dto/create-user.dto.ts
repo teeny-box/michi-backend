@@ -52,4 +52,8 @@ export class CreateUserDto {
   @IsEnum(Role)
   @IsOptional()
   readonly role?: Role;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly fcmToken?: string;
 }
