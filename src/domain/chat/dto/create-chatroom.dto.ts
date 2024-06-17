@@ -4,13 +4,19 @@ import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 export class CreateChatroomDto {
   @IsString()
   @IsNotEmpty()
-  readonly title: string;
+  title: string;
 
   @IsEnum(ChatRoomType)
   @IsNotEmpty()
-  readonly type: ChatRoomType;
+  type: ChatRoomType;
 
   @IsString()
   @IsNotEmpty()
-  readonly ownerId: string;
+  ownerId: string;
+
+  constructor(title: string, type: ChatRoomType, ownerId: string) {
+    this.title = title;
+    this.type = type;
+    this.ownerId = ownerId;
+  }
 }
