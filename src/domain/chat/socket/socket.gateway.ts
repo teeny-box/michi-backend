@@ -1,23 +1,25 @@
 import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Logger, OnModuleInit } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { UsersService } from '@/domain/auth/users/users.service';
-import { ChatService } from '../chat.service';
-import { ChatResponseDto } from '../dto/chat-response.dto';
-import { CreateChatDto } from '../dto/create-chat.dto';
-import { ChatroomService } from '../chatroom/chatroom.service';
 import { UserNotFoundException } from '@/domain/auth/exceptions/users.exception';
 import { ChatroomNotFoundException } from '@/domain/chat/exceptions/chatroom.exception';
 import { UserResponseDto } from '@/domain/auth/users/dto/user-response.dto';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { RedisCacheService } from '@/libs/common';
+import { UsersService } from '@/domain/auth/users/users.service';
+import { ChatService } from '@/domain/chat/chat.service';
+import { ChatroomService } from '@/domain/chat/chatroom/chatroom.service';
+import { CreateChatDto } from '@/domain/chat/dto/create-chat.dto';
+import { ChatResponseDto } from '@/domain/chat/dto/chat-response.dto';
 
 const WELCOME_MESSAGE = '님이 입장하셨습니다';
 const GOODBYE_MESSAGE = '님이 퇴장하셨습니다';
@@ -31,7 +33,7 @@ const NEW_MESSAGE_TITLE = '새로운 메시지가 도착했습니다';
     credentials: true,
   },
 })
-export class SocketGateway implements OnModuleInit {
+export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(SocketGateway.name);
   constructor(
     private readonly chatService: ChatService,
@@ -43,47 +45,42 @@ export class SocketGateway implements OnModuleInit {
   @WebSocketServer()
   server: Server;
 
-  /**
-   * 소켓에 이벤트를 등록합니다.
-   * @description
-   * - connection: 클라이언트가 소켓에 연결될 때 발생하는 이벤트
-   * - join: 클라이언트가 채팅방에 입장할 때 발생하는 이벤트 (join 으로 보내고 onJoin 으로 받음)
-   * - leave: 클라이언트가 채팅방에서 퇴장할 때 발생하는 이벤트 (leave 로 보내고 onLeave 로 받음)
-   * @returns {void}
-   */
-  onModuleInit(): void {
-    this.server.on('connection', async (socket) => {
-      const { userId } = socket.handshake.query;
-      this.logger.log(
-        `Client connected: socket id - ${socket.id}, userId - ${userId}`,
-      );
+  async handleConnection(@ConnectedSocket() socket: Socket) {
+    const { userId } = socket.handshake.query;
+    this.logger.log(
+      `Client connected: socket id - ${socket.id}, userId - ${userId}`,
+    );
 
-      await this.redisCacheService.setUserOnline(userId as string);
-      await this.redisCacheService.addUserToChatQueue(userId as string);
+    await this.redisCacheService.setUserOnline(userId as string);
+    await this.redisCacheService.addUserToChatQueue(userId as string);
 
-      // 채팅방 입장
-      socket.on('join', async (data) => {
-        try {
-          await this.handleJoin(socket, data);
-        } catch (error) {
-          this.logger.error(`Join error: ${error.message}`, error.stack);
-        }
-      });
-
-      // 채팅방 퇴장
-      socket.on('leave', async (data) => {
-        try {
-          await this.handleLeave(socket, data);
-        } catch (error) {
-          this.logger.error(`Leave error: ${error.message}`, error.stack);
-        }
-      });
-
-      // 소켓 연결 해제
-      socket.on('disconnect', async () => {
-        await this.handleDisconnect(userId as string);
-      });
+    // 채팅방 입장
+    socket.on('join', async (data) => {
+      try {
+        await this.handleJoin(socket, data);
+      } catch (error) {
+        this.logger.error(`Join error: ${error.message}`, error.stack);
+      }
     });
+
+    // 채팅방 퇴장
+    socket.on('leave', async (data) => {
+      try {
+        await this.handleLeave(socket, data);
+      } catch (error) {
+        this.logger.error(`Leave error: ${error.message}`, error.stack);
+      }
+    });
+  }
+
+  async handleDisconnect(@ConnectedSocket() socket: Socket) {
+    const { userId } = socket.handshake.query;
+    this.logger.log(
+      `Client disconnected: socket id - ${socket.id}, userId - ${userId}`,
+    );
+
+    await this.redisCacheService.setUserOffline(userId as string);
+    await this.redisCacheService.removeUserFromChatQueue(userId as string);
   }
 
   private async handleJoin(
@@ -118,13 +115,6 @@ export class SocketGateway implements OnModuleInit {
       message: `${socket.data.user.nickname}${GOODBYE_MESSAGE}`,
     });
     socket.disconnect(true);
-  }
-
-  private async handleDisconnect(userId: string) {
-    await this.redisCacheService.setUserOffline(userId);
-    await this.redisCacheService.removeUserFromChatQueue(userId);
-    this.server.emit('userOffline', { userId, status: 'offline' });
-    this.logger.log(`Client disconnected: ${userId}`);
   }
 
   /**
