@@ -17,6 +17,7 @@ import { ChatroomNotFoundException } from '@/domain/chat/exceptions/chatroom.exc
 import { UserResponseDto } from '@/domain/auth/users/dto/user-response.dto';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { RedisCacheService } from '@/libs/common';
 
 const WELCOME_MESSAGE = '님이 입장하셨습니다';
 const GOODBYE_MESSAGE = '님이 퇴장하셨습니다';
@@ -36,6 +37,7 @@ export class SocketGateway implements OnModuleInit {
     private readonly chatService: ChatService,
     private readonly chatroomService: ChatroomService,
     private readonly userService: UsersService,
+    private readonly redisCacheService: RedisCacheService,
     @InjectQueue('notification') private readonly notificationQueue: Queue,
   ) {}
   @WebSocketServer()
@@ -50,8 +52,14 @@ export class SocketGateway implements OnModuleInit {
    * @returns {void}
    */
   onModuleInit(): void {
-    this.server.on('connection', (socket) => {
-      this.logger.log(`Client connected: ${socket.id}`);
+    this.server.on('connection', async (socket) => {
+      const { userId } = socket.handshake.query;
+      this.logger.log(
+        `Client connected: socket id - ${socket.id}, userId - ${userId}`,
+      );
+
+      await this.redisCacheService.setUserOnline(userId as string);
+      await this.redisCacheService.addUserToChatQueue(userId as string);
 
       // 채팅방 입장
       socket.on('join', async (data) => {
@@ -69,6 +77,11 @@ export class SocketGateway implements OnModuleInit {
         } catch (error) {
           this.logger.error(`Leave error: ${error.message}`, error.stack);
         }
+      });
+
+      // 소켓 연결 해제
+      socket.on('disconnect', async () => {
+        await this.handleDisconnect(userId as string);
       });
     });
   }
@@ -105,6 +118,13 @@ export class SocketGateway implements OnModuleInit {
       message: `${socket.data.user.nickname}${GOODBYE_MESSAGE}`,
     });
     socket.disconnect(true);
+  }
+
+  private async handleDisconnect(userId: string) {
+    await this.redisCacheService.setUserOffline(userId);
+    await this.redisCacheService.removeUserFromChatQueue(userId);
+    this.server.emit('userOffline', { userId, status: 'offline' });
+    this.logger.log(`Client disconnected: ${userId}`);
   }
 
   /**

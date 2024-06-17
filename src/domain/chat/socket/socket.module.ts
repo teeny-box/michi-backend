@@ -10,7 +10,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from '@/domain/auth/users/schemas/user.schema';
 import { ChatModule } from '../chat.module';
 import { ChatroomModule } from '../chatroom/chatroom.module';
-import { StatusGateway } from '@/domain/chat/socket/status.gateway';
 import { NotificationModule } from '@/libs/common/notification/notification.module';
 
 @Module({
@@ -27,6 +26,6 @@ import { NotificationModule } from '@/libs/common/notification/notification.modu
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
     NotificationModule,
   ],
-  providers: [SocketGateway, StatusGateway, UsersService, UsersRepository],
+  providers: [SocketGateway, UsersService, UsersRepository],
 })
 export class SocketModule {}
