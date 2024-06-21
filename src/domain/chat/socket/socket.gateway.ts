@@ -40,7 +40,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly chatroomService: ChatroomService,
     private readonly userService: UsersService,
     private readonly redisCacheService: RedisCacheService,
-    @InjectQueue('notification') private readonly notificationQueue: Queue,
+    @InjectQueue('notification') private notificationQueue: Queue,
   ) {}
   @WebSocketServer()
   server: Server;
@@ -151,9 +151,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       };
 
       // Add job to queue
-      await this.notificationQueue.add(`${user.nickname}`, notificationData, {
-        removeOnComplete: true,
-      });
+      await this.notificationQueue.add(
+        `send-push-notification`,
+        notificationData,
+        {
+          removeOnComplete: true,
+          removeOnFail: true,
+        },
+      );
     } catch (error) {
       this.logger.error(`Message error: ${error.message}`, error.stack);
       client.emit('onError', {

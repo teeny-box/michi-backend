@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { FirebaseAdminService } from '@/libs/common/firebase/firebase-admin.service';
+import { FirebaseAdminModule } from '@/libs/common/firebase/firebase-admin.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { FirebaseAdminService } from '@/libs/common/firebase/firebase-admin.serv
     BullModule.registerQueue({
       name: 'notification',
     }),
+    FirebaseAdminModule,
   ],
   providers: [FirebaseAdminService],
   exports: [BullModule],

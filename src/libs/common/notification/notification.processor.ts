@@ -6,7 +6,7 @@ import { Job } from 'bull';
 export class NotificationProcessor {
   constructor(private readonly firebaseAdminService: FirebaseAdminService) {}
 
-  @Process()
+  @Process('send-push-notification')
   async sendPushNotification(job: Job) {
     const { token, title, message } = job.data;
     await this.firebaseAdminService.sendPushNotification(token, title, message);

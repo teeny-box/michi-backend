@@ -16,6 +16,7 @@ import { ChatroomModule } from './domain/chat/chatroom/chatroom.module';
 import { ImagesModule } from './domain/images/images.module';
 import { PostsModule } from './domain/posts/posts.module';
 import { NotificationModule } from '@/libs/common/notification/notification.module';
+import { FirebaseAdminModule } from '@/libs/common/firebase/firebase-admin.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { NotificationModule } from '@/libs/common/notification/notification.modu
     ImagesModule,
     PostsModule,
     NotificationModule,
+    FirebaseAdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

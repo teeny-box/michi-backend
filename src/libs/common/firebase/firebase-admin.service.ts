@@ -23,9 +23,11 @@ export class FirebaseAdminService {
       ),
     };
 
-    admin.initializeApp({
-      credential: admin.credential.cert(firebase_params),
-    });
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert(firebase_params),
+      });
+    }
   }
 
   async sendPushNotification(token: string, title: string, message: string) {

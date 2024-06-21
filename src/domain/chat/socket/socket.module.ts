@@ -11,6 +11,9 @@ import { UserSchema } from '@/domain/auth/users/schemas/user.schema';
 import { ChatModule } from '../chat.module';
 import { ChatroomModule } from '../chatroom/chatroom.module';
 import { NotificationModule } from '@/libs/common/notification/notification.module';
+import { NotificationProcessor } from '@/libs/common/notification/notification.processor';
+import { FirebaseAdminService } from '@/libs/common/firebase/firebase-admin.service';
+import { FirebaseAdminModule } from '@/libs/common/firebase/firebase-admin.module';
 
 @Module({
   imports: [
@@ -25,7 +28,14 @@ import { NotificationModule } from '@/libs/common/notification/notification.modu
     RedisCacheModule,
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
     NotificationModule,
+    FirebaseAdminModule,
   ],
-  providers: [SocketGateway, UsersService, UsersRepository],
+  providers: [
+    SocketGateway,
+    UsersService,
+    UsersRepository,
+    NotificationProcessor,
+    FirebaseAdminService,
+  ],
 })
 export class SocketModule {}
