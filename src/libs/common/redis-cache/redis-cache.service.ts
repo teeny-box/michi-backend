@@ -45,4 +45,8 @@ export class RedisCacheService {
   async getNextUserFromChatQueue(): Promise<string> {
     return this.redisClient.rpop('chat_queue');
   }
+  async isUserInChatQueue(userId: string): Promise<boolean> {
+    const queue = await this.redisClient.lrange('chat_queue', 0, -1);
+    return queue.includes(userId);
+  }
 }

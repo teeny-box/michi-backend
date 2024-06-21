@@ -51,8 +51,13 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       `Client connected: socket id - ${socket.id}, userId - ${userId}`,
     );
 
+    // 온라인인 유저 집합에 추가
     await this.redisCacheService.setUserOnline(userId as string);
-    await this.redisCacheService.addUserToChatQueue(userId as string);
+
+    // 랜덤 채팅 큐에 유저 추가
+    if (await this.redisCacheService.isUserInChatQueue(userId as string)) {
+      await this.redisCacheService.addUserToChatQueue(userId as string);
+    }
 
     // 채팅방 입장
     socket.on('join', async (data) => {
