@@ -15,6 +15,7 @@ import { ChatModule } from './domain/chat/chat.module';
 import { ChatroomModule } from './domain/chat/chatroom/chatroom.module';
 import { ImagesModule } from './domain/images/images.module';
 import { PostsModule } from './domain/posts/posts.module';
+import { NotificationModule } from '@/libs/common/notification/notification.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { PostsModule } from './domain/posts/posts.module';
     ChatroomModule,
     ImagesModule,
     PostsModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

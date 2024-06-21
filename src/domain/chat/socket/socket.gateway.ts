@@ -151,7 +151,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       };
 
       // Add job to queue
-      await this.notificationQueue.add(notificationData);
+      await this.notificationQueue.add(`${user.nickname}`, notificationData, {
+        removeOnComplete: true,
+      });
     } catch (error) {
       this.logger.error(`Message error: ${error.message}`, error.stack);
       client.emit('onError', {
