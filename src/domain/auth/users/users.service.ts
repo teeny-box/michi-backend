@@ -8,7 +8,6 @@ import {
   UserNicknameDuplicateException,
   UserNotFoundException,
 } from '@/domain/auth/exceptions/users.exception';
-import { ObjectId } from 'mongodb';
 import {
   hashPassword,
   verifyPassword,
@@ -18,6 +17,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { RedisCacheService } from '@/libs/common';
 import { deleteFiles } from '@/libs/common/utils/s3.utils';
 import { ConfigService } from '@nestjs/config';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class UsersService {
@@ -58,7 +58,7 @@ export class UsersService {
   }
 
   // _id로 회원 정보 조회
-  async findById(_id: ObjectId): Promise<User> {
+  async findById(_id: Types.ObjectId): Promise<User> {
     const user = await this.usersRepository.findOne({ _id });
     if (!user) {
       throw new UserNotFoundException('사용자를 찾을 수 없습니다.');
@@ -113,7 +113,10 @@ export class UsersService {
   }
 
   // 비밀번호 변경
-  async changePassword(_id: ObjectId, newPassword: string): Promise<void> {
+  async changePassword(
+    _id: Types.ObjectId,
+    newPassword: string,
+  ): Promise<void> {
     const hashedPassword = await hashPassword(newPassword);
 
     await this.usersRepository.findOneAndUpdate(
@@ -123,7 +126,7 @@ export class UsersService {
   }
 
   // 회원 탈퇴
-  async remove(_id: ObjectId): Promise<void> {
+  async remove(_id: Types.ObjectId): Promise<void> {
     await this.usersRepository.findOneAndUpdate(
       { _id },
       {

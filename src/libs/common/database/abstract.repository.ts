@@ -105,10 +105,4 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
       lean: true,
     });
   }
-
-  async startTransaction() {
-    const session = await this.connection.startSession();
-    session.startTransaction();
-    return session;
-  }
 }

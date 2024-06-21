@@ -7,7 +7,6 @@ import { catchError, lastValueFrom, map } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
 import TokenPayload from './interfaces/token-payload.interface';
 import { ConfigService } from '@nestjs/config';
-import { ObjectId } from 'mongodb';
 import {
   InvalidTokenException,
   UserConflictException,
@@ -22,6 +21,7 @@ import { UsersRepository } from './users/users.repository';
 import { AuthVerificationDto } from './users/dto/auth-verification.dto';
 import { RedisCacheService } from '@/libs/common';
 import * as argon2 from 'argon2';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class AuthService {
@@ -164,7 +164,7 @@ export class AuthService {
   }
 
   // 로그아웃 (db에서 리프레시토큰 삭제)
-  async logout(_id: ObjectId): Promise<void> {
+  async logout(_id: Types.ObjectId): Promise<void> {
     await this.redisCacheService.del(_id.toString());
   }
 
@@ -217,7 +217,7 @@ export class AuthService {
   }
 
   // refresh token 검증
-  async refreshTokenMatches(refreshToken: string, _id: ObjectId) {
+  async refreshTokenMatches(refreshToken: string, _id: Types.ObjectId) {
     const user = await this.usersService.findById(_id);
 
     const currentRefreshToken = await this.redisCacheService.get(
