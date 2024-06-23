@@ -141,4 +141,11 @@ export class UsersService {
   async registerFcmToken(userId: string, fcmToken: string): Promise<void> {
     await this.usersRepository.findOneAndUpdate({ userId }, { fcmToken });
   }
+
+  async getFcmTokensByUserIds(userIds: string[]): Promise<string[]> {
+    const { results } = await this.usersRepository.find({
+      userId: { $in: userIds },
+    });
+    return results.map((user) => user.fcmToken).filter(Boolean);
+  }
 }

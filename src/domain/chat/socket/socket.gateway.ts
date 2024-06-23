@@ -20,6 +20,8 @@ import { ChatService } from '@/domain/chat/chat.service';
 import { ChatroomService } from '@/domain/chat/chatroom/chatroom.service';
 import { CreateChatDto } from '@/domain/chat/dto/create-chat.dto';
 import { ChatResponseDto } from '@/domain/chat/dto/chat-response.dto';
+import { SendNotificationDto } from '@/domain/chat/socket/dto/send-notification.dto';
+import { NotificationTypeEnum } from '@/domain/chat/socket/@types/notification-type.enum';
 
 const WELCOME_MESSAGE = '님이 입장하셨습니다';
 const GOODBYE_MESSAGE = '님이 퇴장하셨습니다';
@@ -79,21 +81,22 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleDisconnect(@ConnectedSocket() socket: Socket) {
-    const { userId } = socket.handshake.query;
+    const { userId } = socket.handshake.query as { userId: string };
     this.logger.log(
       `Client disconnected: socket id - ${socket.id}, userId - ${userId}`,
     );
 
-    await this.redisCacheService.setUserOffline(userId as string);
-    await this.redisCacheService.removeUserFromChatQueue(userId as string);
+    await this.redisCacheService.setUserOffline(userId);
+    await this.redisCacheService.removeUserFromChatQueue(userId);
   }
 
   private async handleJoin(
-    socket: Socket,
+    @ConnectedSocket() socket: Socket,
     data: { chatroomId: string; userId: string },
   ) {
     const { chatroomId, userId } = data;
 
+    // validate user and chatroom
     const user = await this.userService.findByUserId(userId);
     if (!user) throw new UserNotFoundException('해당 유저를 찾을 수 없습니다');
 
@@ -101,23 +104,28 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!chatroom)
       throw new ChatroomNotFoundException('채팅방을 찾을 수 없습니다');
 
-    socket.data.user = user;
+    // join chatroom
     await this.chatroomService.joinChatRoom(userId, chatroomId);
-    socket.join(chatroomId);
+    this.server.in(socket.id).socketsJoin(chatroomId);
+
     this.server.to(chatroomId).emit('onJoin', {
       message: `${user.nickname}${WELCOME_MESSAGE}`,
       data: new UserResponseDto(user),
     });
   }
 
-  private async handleLeave(socket: Socket, data: { chatroomId: string }) {
-    const { chatroomId } = data;
-    const userId = socket.data.user.userId;
+  private async handleLeave(
+    @ConnectedSocket() socket: Socket,
+    data: { chatroomId: string; userId: string },
+  ) {
+    const { chatroomId, userId } = data;
+    const user = await this.userService.findByUserId(userId);
 
     await this.chatroomService.leaveChatRoom(userId, chatroomId);
-    socket.leave(chatroomId);
+    this.server.in(socket.id).socketsLeave(chatroomId);
+
     this.server.to(chatroomId).emit('onLeave', {
-      message: `${socket.data.user.nickname}${GOODBYE_MESSAGE}`,
+      message: `${user.nickname}${GOODBYE_MESSAGE}`,
     });
     socket.disconnect(true);
   }
@@ -130,27 +138,33 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: CreateChatDto,
   ) {
-    this.logger.log(`client id: ${client.id}`);
-
     try {
-      const { chatroomId } = payload;
-      const user = client.data.user;
+      const { chatroomId, userId } = payload;
+      const sender = await this.userService.findByUserId(userId);
       const chat = await this.chatService.create(payload);
 
       // Broadcast to all clients in the chatroom
       this.server.to(chatroomId).emit('onMessage', {
         message: MESSAGE_SUCCESS,
-        data: new ChatResponseDto(chat, user),
+        data: new ChatResponseDto(chat, sender),
       });
+
+      // Get all clients in the chatroom
+      const receivers = await this.chatroomService.getReceivers(
+        chatroomId,
+        userId,
+      );
+      const tokens = await this.userService.getFcmTokensByUserIds(receivers);
 
       // Push Notification
       const notificationData = {
-        token: user.fcmToken,
-        title: NEW_MESSAGE_TITLE,
-        body: `${user.nickname} : ${chat.message}`,
+        tokens: tokens,
+        sendNotificationDto: new SendNotificationDto(
+          NEW_MESSAGE_TITLE,
+          chat.message,
+        ),
       };
 
-      // Add job to queue
       await this.notificationQueue.add(
         `send-push-notification`,
         notificationData,

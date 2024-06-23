@@ -39,9 +39,16 @@ export class ChatroomService {
       { _id: chatRoomId },
       { $pull: { userIds: userId } },
     );
-    console.log(chatroom);
-    // if (chatroom.userIds.length === 0) {
-    //   await this.chatroomRepository.findOneAndUpdate({ _id: chatRoomId}, { deletedAt: new Date()});
-    // }
+    if (chatroom.userIds.size === 0) {
+      await this.chatroomRepository.findOneAndUpdate(
+        { _id: chatRoomId },
+        { deletedAt: new Date() },
+      );
+    }
+  }
+
+  async getReceivers(chatroomId: string, userId: string) {
+    const chatroom = await this.chatroomRepository.findOne({ _id: chatroomId });
+    return Array.from(chatroom.userIds).filter((id) => id !== userId);
   }
 }

@@ -39,15 +39,12 @@ export class FirebaseAdminService {
       data: {
         title: sendNotificationDto.title,
         body: sendNotificationDto.body,
-        type: sendNotificationDto.type,
-        url: sendNotificationDto.url,
-        imageUrl: sendNotificationDto.imageUrl,
-        priority: sendNotificationDto.priority,
-        ...sendNotificationDto.data,
       },
     };
 
     console.log('Sending push notification', payload);
+
+    if (!tokens.length) return;
 
     return await admin
       .messaging()
