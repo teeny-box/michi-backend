@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import * as admin from 'firebase-admin';
-import { FirebaseException } from '@/libs/common/firebase/firebase.exception';
 import { ConfigService } from '@nestjs/config';
+import * as admin from 'firebase-admin';
+import { SendNotificationDto } from '@/domain/chat/socket/dto/send-notification.dto';
 
 @Injectable()
 export class FirebaseAdminService {
@@ -30,19 +30,35 @@ export class FirebaseAdminService {
     }
   }
 
-  async sendPushNotification(token: string, title: string, message: string) {
+  async sendPushNotification(
+    tokens: string[],
+    sendNotificationDto: SendNotificationDto,
+  ) {
     const payload = {
-      token: token,
+      tokens: tokens,
       data: {
-        title: title,
-        body: message,
+        title: sendNotificationDto.title,
+        body: sendNotificationDto.body,
+        type: sendNotificationDto.type,
+        url: sendNotificationDto.url,
+        imageUrl: sendNotificationDto.imageUrl,
+        priority: sendNotificationDto.priority,
+        ...sendNotificationDto.data,
       },
     };
 
-    try {
-      return await admin.messaging().send(payload);
-    } catch (error) {
-      throw new FirebaseException(error.message);
-    }
+    console.log('Sending push notification', payload);
+
+    return await admin
+      .messaging()
+      .sendEachForMulticast(payload)
+      .then((response) => {
+        console.log(response);
+        return { sent_message: response };
+      })
+      .catch((error) => {
+        console.error('Firebase error', error);
+        return { error_code: error.code, error_message: error.message };
+      });
   }
 }

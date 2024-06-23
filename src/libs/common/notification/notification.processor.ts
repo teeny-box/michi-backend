@@ -8,7 +8,10 @@ export class NotificationProcessor {
 
   @Process('send-push-notification')
   async sendPushNotification(job: Job) {
-    const { token, title, message } = job.data;
-    await this.firebaseAdminService.sendPushNotification(token, title, message);
+    const { tokens, sendNotificationDto } = job.data;
+    await this.firebaseAdminService.sendPushNotification(
+      tokens,
+      sendNotificationDto,
+    );
   }
 }

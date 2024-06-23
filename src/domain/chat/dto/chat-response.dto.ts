@@ -1,7 +1,8 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { Chat } from '../schemas/chat.schema';
 import { User } from '@/domain/auth/users/schemas/user.schema';
 import { UserResponseDto } from '@/domain/auth/users/dto/user-response.dto';
+import { MessageType } from '@/domain/chat/@types/enums/message-type.enum';
 
 export class ChatResponseDto {
   @IsString()
@@ -9,10 +10,10 @@ export class ChatResponseDto {
   readonly message: string;
 
   readonly user: UserResponseDto;
+  readonly chatroomId: string;
 
-  // @IsString()
-  // @IsNotEmpty()
-  // readonly nickname: string;
+  @IsEnum(MessageType)
+  readonly messageType: MessageType;
 
   @IsString()
   @IsNotEmpty()
@@ -20,7 +21,6 @@ export class ChatResponseDto {
 
   constructor(chat: Chat, user: User) {
     this.message = chat.message;
-    // this.nickname = user.nickname;
     this.user = new UserResponseDto(user);
     this.createdAt = chat.createdAt.toISOString();
   }
