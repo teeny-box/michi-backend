@@ -54,10 +54,6 @@ export class PostsController {
   @UseGuards(JwtAuthGuard)
   async findOne(@Param('postNumber') postNumber: number) {
     const { post, user } = await this.postsService.findOne(postNumber);
-    if (!post) {
-      throw new PostNotFoundException('게시글을 찾을 수 없습니다.');
-    }
-
     return HttpResponse.success(
       '게시글이 조회되었습니다.',
       new PostResponseDto(post, user),
