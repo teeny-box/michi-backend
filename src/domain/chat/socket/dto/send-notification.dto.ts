@@ -1,5 +1,7 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { NotificationTypeEnum } from '@/domain/chat/socket/@types/notification-type.enum';
+
+type PriorityType = 'high' | 'normal';
 
 export class SendNotificationDto {
   @IsString()
@@ -17,9 +19,13 @@ export class SendNotificationDto {
   @IsOptional()
   imageUrl?: string; // 알림 이미지 url
 
+  @IsBoolean()
+  @IsOptional()
+  contentAvailable?: boolean; // 알림 콘텐츠가 존재하는지 여부
+
   @IsString()
   @IsOptional()
-  priority?: 'high' | 'normal'; // 알림 우선순위
+  priority?: PriorityType; // 알림 우선순위
 
   data?: Record<string, any>; // 추가 데이터
 
@@ -29,7 +35,8 @@ export class SendNotificationDto {
     type?: NotificationTypeEnum,
     url?: string,
     imageUrl?: string,
-    priority?: 'high' | 'normal',
+    contentAvailable?: boolean,
+    priority?: PriorityType,
     data?: Record<string, any>,
   ) {
     this.title = title;
@@ -37,6 +44,7 @@ export class SendNotificationDto {
     this.type = type || NotificationTypeEnum.CHAT;
     this.url = url;
     this.imageUrl = imageUrl;
+    this.contentAvailable = contentAvailable;
     this.priority = priority;
     this.data = data;
   }

@@ -40,6 +40,8 @@ export class FirebaseAdminService {
         title: sendNotificationDto.title,
         body: sendNotificationDto.body,
       },
+      contentAvailable: sendNotificationDto.contentAvailable || true,
+      priority: sendNotificationDto.priority || 'high',
     };
 
     console.log('Sending push notification', payload);
