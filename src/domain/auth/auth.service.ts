@@ -240,4 +240,13 @@ export class AuthService {
 
     return user;
   }
+
+  async getUserByToken(token: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync(token);
+      return await this.usersService.findById(payload._id);
+    } catch (e) {
+      throw new UserUnauthorizedException('토큰이 유효하지 않습니다.');
+    }
+  }
 }

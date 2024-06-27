@@ -54,3 +54,13 @@ export class UserConflictException extends BaseException {
     super(AuthExceptionEnum.USER_CONFLICT, HttpStatus.CONFLICT, message);
   }
 }
+
+export class NoTokenProvidedException extends BaseException {
+  constructor(message: string) {
+    super(
+      AuthExceptionEnum.NO_TOKEN_PROVIDED,
+      HttpStatus.UNAUTHORIZED,
+      message,
+    );
+  }
+}
