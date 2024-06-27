@@ -55,21 +55,29 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {}
 
   async handleConnection(@ConnectedSocket() socket: Socket) {
-    const token = socket.handshake.headers.authorization;
-    if (!token || token.length === 0)
-      throw new NoTokenProvidedException('토큰이 제공되지 않았습니다');
+    try {
+      const token = socket.handshake.headers.authorization;
+      if (!token || token.length === 0)
+        throw new NoTokenProvidedException('토큰이 제공되지 않았습니다');
 
-    const user = await this.authService.getUserByToken(token);
-    if (!user) throw new UserNotFoundException('사용자를 찾을 수 없습니다');
-    socket.data.userId = user.userId;
+      const user = await this.authService.getUserByToken(token);
+      if (!user) throw new UserNotFoundException('사용자를 찾을 수 없습니다');
+      socket.data.userId = user.userId;
 
-    this.logger.log(
-      `Client connected: socket id - ${socket.id}, userId - ${user.userId}`,
-    );
+      this.logger.log(
+        `Client connected: socket id - ${socket.id}, userId - ${user.userId}`,
+      );
 
-    await this.handleUserConnection(user.userId);
+      await this.handleUserConnection(user.userId);
 
-    this.setupSocketListeners(socket);
+      this.setupSocketListeners(socket);
+    } catch (error) {
+      this.logger.error(`Connection error: ${error.message}`, error.stack);
+      socket.emit('onError', {
+        message: error.message,
+      });
+      await this.handleSocketDisconnectionOnly(socket);
+    }
   }
 
   async handleDisconnect(@ConnectedSocket() socket: Socket) {
@@ -78,7 +86,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       `Client disconnected: socket id - ${socket.id}, userId - ${userId}`,
     );
 
-    await this.handleUserDisconnection(userId);
+    await this.handleUserDisconnection(socket, userId);
   }
 
   private async handleUserConnection(userId: string) {
@@ -88,7 +96,17 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  private async handleUserDisconnection(userId: string) {
+  private async handleSocketDisconnectionOnly(
+    @ConnectedSocket() socket: Socket,
+  ) {
+    socket.disconnect(true);
+  }
+
+  private async handleUserDisconnection(
+    @ConnectedSocket() socket: Socket,
+    userId: string,
+  ) {
+    socket.disconnect(true);
     await this.redisCacheService.setUserOffline(userId);
     await this.redisCacheService.removeUserFromChatQueue(userId);
   }
