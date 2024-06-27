@@ -17,11 +17,11 @@ export class ChatResponseDto {
 
   @IsString()
   @IsNotEmpty()
-  readonly createdAt: string;
+  readonly createdAt: Date;
 
   constructor(chat: Chat, user: User) {
     this.message = chat.message;
     this.user = new UserResponseDto(user);
-    this.createdAt = chat.createdAt.toISOString();
+    this.createdAt = chat.createdAt;
   }
 }
