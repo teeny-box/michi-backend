@@ -1,4 +1,4 @@
-name: lint
+name: CI
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    name: lint, build
+    name: lint, build, and test
     runs-on: ubuntu-latest
 
     steps:
@@ -30,13 +30,23 @@ jobs:
       # 위에서 node_modules가 변했다면 npm install 실행
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm install
+        run: npm ci
 
       # if always -> lint에서 에러가 있더라도 뒤에 과정 다 실행
-      - name: lint test
+      - name: Lint
         run: npm run lint
         if: ${{ always() }}
 
-      - name: tsc build
+      - name: Build
         run: npm run build
+        if: ${{ always() }}
+
+      # 단위 테스트 실행
+      - name: Run unit tests
+        run: npm run test
+        if: ${{ always() }}
+
+      # E2E 테스트 실행
+      - name: Run E2E tests
+        run: npm run test:e2e
         if: ${{ always() }}
