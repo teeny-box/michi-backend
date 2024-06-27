@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ChatRepository } from './chat.repository';
 import { CreateChatDto } from './dto/create-chat.dto';
-import { PageOptionsDto } from '@/libs/common/dto/page/page-options.dto';
-import { ChatroomService } from './chatroom/chatroom.service';
-import { ChatroomNotFoundException } from './exceptions/chatroom.exception';
+import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
+import { ChatroomService } from '@/domain/chatroom/chatroom.service';
+import { ChatroomNotFoundException } from '@/domain/chatroom/exceptions/chatroom.exception';
 
 @Injectable()
 export class ChatService {

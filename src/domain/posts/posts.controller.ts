@@ -12,15 +12,14 @@ import {
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
-import { HttpResponse } from '@/libs/common/dto/http-response';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { PageOptionsDto } from '@/libs/common/dto/page/page-options.dto';
-import { PageMetaDto } from '@/libs/common/dto/page/page-meta.dto';
-import { PageDto } from '@/libs/common/dto/page/page.dto';
 import { PostResponseDto } from './dto/post-response.dto';
 import { JwtAuthGuard } from '@/domain/auth/guards/jwt-auth.guard';
 import RequestWithUser from '@/domain/auth/interfaces/request-with-user.interface';
-import { PostNotFoundException } from './exceptions/posts.exception';
+import { HttpResponse } from '@/common/dto/http-response';
+import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
+import { PageDto } from '@/common/dto/page/page.dto';
+import { PageMetaDto } from '@/common/dto/page/page-meta.dto';
 
 @Controller('posts')
 export class PostsController {

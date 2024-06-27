@@ -12,12 +12,12 @@ import {
   hashPassword,
   verifyPassword,
 } from '@/domain/auth/common/utils/password.utils';
-import { State } from '@/domain/auth/@types/enums/user.enum';
 import { CreateUserDto } from './dto/create-user.dto';
-import { RedisCacheService } from '@/libs/common';
-import { deleteFiles } from '@/libs/common/utils/s3.utils';
 import { ConfigService } from '@nestjs/config';
 import { Types } from 'mongoose';
+import { RedisCacheService } from '@/common';
+import { deleteFiles } from '@/common/utils/s3.utils';
+import { State } from '@/common/enums/user.enum';
 
 @Injectable()
 export class UsersService {

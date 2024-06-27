@@ -2,10 +2,11 @@ import { Module } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { ConfigModule } from '@nestjs/config';
-import { DatabaseModule, RedisCacheModule } from '@/libs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from './schemas/user.schema';
 import { UsersRepository } from './users.repository';
+import { DatabaseModule } from '@/database/database.module';
+import { RedisCacheModule } from '@/common';
 
 @Module({
   imports: [

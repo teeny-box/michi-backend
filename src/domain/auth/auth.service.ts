@@ -16,12 +16,12 @@ import {
 } from './exceptions/auth.exception';
 import { UserNotFoundException } from '@/domain/auth/exceptions/users.exception';
 import { verifyPassword } from './common/utils/password.utils';
-import { State } from './@types/enums/user.enum';
 import { UsersRepository } from './users/users.repository';
 import { AuthVerificationDto } from './users/dto/auth-verification.dto';
-import { RedisCacheService } from '@/libs/common';
 import * as argon2 from 'argon2';
 import { Types } from 'mongoose';
+import { RedisCacheService } from '@/common';
+import { State } from '@/common/enums/user.enum';
 
 @Injectable()
 export class AuthService {

@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
-import { Role, State } from '@/domain/auth/@types/enums/user.enum';
 import { User } from '../schemas/user.schema';
+import { Role, State } from '@/common/enums/user.enum';
 
 export class UserResponseDto {
   @Expose()

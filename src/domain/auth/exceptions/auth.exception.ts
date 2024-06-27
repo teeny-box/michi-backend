@@ -1,5 +1,5 @@
-import { AuthExceptionEnum, BaseException } from '@/libs/common';
 import { HttpStatus } from '@nestjs/common';
+import { AuthExceptionEnum, BaseException } from '@/common';
 
 export class UserUnauthorizedException extends BaseException {
   constructor(message: string) {

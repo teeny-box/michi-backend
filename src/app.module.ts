@@ -3,20 +3,18 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
-import {
-  DatabaseModule,
-  RedisConfigService,
-  RedisCacheModule,
-} from '@/libs/common';
 import { RedisModule } from '@songkeys/nestjs-redis';
 import { AuthModule } from './domain/auth/auth.module';
 import { UsersModule } from './domain/auth/users/users.module';
 import { ChatModule } from './domain/chat/chat.module';
-import { ChatroomModule } from './domain/chat/chatroom/chatroom.module';
 import { ImagesModule } from './domain/images/images.module';
 import { PostsModule } from './domain/posts/posts.module';
-import { NotificationModule } from '@/libs/common/notification/notification.module';
-import { FirebaseAdminModule } from '@/libs/common/firebase/firebase-admin.module';
+import { DatabaseModule } from '@/database/database.module';
+import { RedisConfigService } from '@/config/redis-cache.config';
+import { RedisCacheModule } from '@/common';
+import { NotificationModule } from '@/domain/notification/notification.module';
+import { FirebaseAdminModule } from '@/domain/firebase/firebase-admin.module';
+import { ChatroomModule } from '@/domain/chatroom/chatroom.module';
 
 @Module({
   imports: [

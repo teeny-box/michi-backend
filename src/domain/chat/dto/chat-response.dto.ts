@@ -2,7 +2,7 @@ import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { Chat } from '../schemas/chat.schema';
 import { User } from '@/domain/auth/users/schemas/user.schema';
 import { UserResponseDto } from '@/domain/auth/users/dto/user-response.dto';
-import { MessageType } from '@/domain/chat/@types/enums/message-type.enum';
+import { MessageType } from '@/common/enums/message-type.enum';
 
 export class ChatResponseDto {
   @IsString()
