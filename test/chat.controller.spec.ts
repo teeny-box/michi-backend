@@ -11,6 +11,8 @@ import { Role, State } from '@/common/enums/user.enum';
 import { ChatResponseDto } from '@/domain/chat/dto/chat-response.dto';
 import { PageMetaDto } from '@/common/dto/page/page-meta.dto';
 import { HttpResponse } from '@/common/dto/http-response';
+import { RedisCacheService } from '@/common';
+import { ChatroomService } from '@/domain/chatroom/chatroom.service';
 
 describe('ChatController', () => {
   let chatController: ChatController;
@@ -25,12 +27,23 @@ describe('ChatController', () => {
     findByUserIds: jest.fn(),
   };
 
+  const mockRedisCacheService = {
+    get: jest.fn(),
+    set: jest.fn(),
+  };
+
+  const mockChatroomService = {
+    create: jest.fn(),
+  };
+
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [ChatController],
       providers: [
         { provide: ChatService, useValue: mockChatService },
         { provide: UsersService, useValue: mockUsersService },
+        { provide: RedisCacheService, useValue: mockRedisCacheService },
+        { provide: ChatroomService, useValue: mockChatroomService },
       ],
     }).compile();
 

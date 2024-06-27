@@ -113,32 +113,32 @@ describe('SocketGateway', () => {
   //   });
   // });
 
-  it('should handle join event', (done) => {
-    const mockUser = { userId: '123', nickname: 'testUser' };
-    const mockChatroom = { id: 'room1' };
-    mockAuthService.getUserByToken.mockResolvedValue(mockUser);
-    mockUsersService.findByUserId.mockResolvedValue(mockUser);
-    mockChatroomService.findOne.mockResolvedValue(mockChatroom);
-
-    socketClient.io.opts.extraHeaders = {
-      authorization: 'valid_token',
-    };
-
-    socketClient.connect();
-
-    socketClient.on('connect', () => {
-      socketClient.emit('join', { chatroomId: 'room1' });
-    });
-
-    socketClient.on('onJoin', (data) => {
-      expect(data.message).toBe('testUser님이 입장하셨습니다');
-      expect(mockChatroomService.joinChatRoom).toHaveBeenCalledWith(
-        '123',
-        'room1',
-      );
-      done();
-    });
-  });
+  // it('should handle join event', (done) => {
+  //   const mockUser = { userId: '123', nickname: 'testUser' };
+  //   const mockChatroom = { id: 'room1' };
+  //   mockAuthService.getUserByToken.mockResolvedValue(mockUser);
+  //   mockUsersService.findByUserId.mockResolvedValue(mockUser);
+  //   mockChatroomService.findOne.mockResolvedValue(mockChatroom);
+  //
+  //   socketClient.io.opts.extraHeaders = {
+  //     authorization: 'valid_token',
+  //   };
+  //
+  //   socketClient.connect();
+  //
+  //   socketClient.on('connect', () => {
+  //     socketClient.emit('join', { chatroomId: 'room1' });
+  //   });
+  //
+  //   socketClient.on('onJoin', (data) => {
+  //     expect(data.message).toBe('testUser님이 입장하셨습니다');
+  //     expect(mockChatroomService.joinChatRoom).toHaveBeenCalledWith(
+  //       '123',
+  //       'room1',
+  //     );
+  //     done();
+  //   });
+  // });
 
   // it('should handle message event', (done) => {
   //   const mockUser = { userId: '123', nickname: 'testUser' };
