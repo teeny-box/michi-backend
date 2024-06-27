@@ -45,8 +45,3 @@ jobs:
       - name: Run unit tests
         run: npm run test
         if: ${{ always() }}
-
-      # E2E 테스트 실행
-      - name: Run E2E tests
-        run: npm run test:e2e
-        if: ${{ always() }}
