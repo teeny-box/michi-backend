@@ -1,5 +1,5 @@
-import { BaseException, PostExceptionEnum } from '@/libs/common';
 import { HttpStatus } from '@nestjs/common';
+import { BaseException, PostExceptionEnum } from '@/common';
 
 export class PostForbiddenException extends BaseException {
   constructor(message: string) {

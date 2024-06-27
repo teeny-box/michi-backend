@@ -13,11 +13,11 @@ import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '@/domain/auth/guards/jwt-auth.guard';
 import RequestWithUser from '@/domain/auth/interfaces/request-with-user.interface';
-import { HttpResponse } from '@/libs/common/dto/http-response';
 import { OneTimeAuthGuard } from '@/domain/auth/guards/one-time-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { RedisCacheService } from '@/libs/common';
 import { RegisterFcmTokenDto } from '@/domain/auth/users/dto/register-fcm-token.dto';
+import { RedisCacheService } from '@/common';
+import { HttpResponse } from '@/common/dto/http-response';
 
 @Controller('users')
 export class UsersController {

@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { RedisCacheService } from '@/libs/common';
 import { User } from './schemas/user.schema';
 import { Types } from 'mongoose';
-import { Role, State } from '../@types/enums/user.enum';
-import { HttpResponse } from '@/libs/common/dto/http-response';
 import RequestWithUser from '../interfaces/request-with-user.interface';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { RegisterFcmTokenDto } from './dto/register-fcm-token.dto';
+import { RedisCacheService } from '@/common';
+import { HttpResponse } from '@/common/dto/http-response';
+import { Role, State } from '@/common/enums/user.enum';
 
 describe('UsersController', () => {
   let usersController: UsersController;

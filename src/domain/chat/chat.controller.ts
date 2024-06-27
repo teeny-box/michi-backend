@@ -8,20 +8,20 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { PageOptionsDto } from '@/libs/common/dto/page/page-options.dto';
-import { PageDto } from '@/libs/common/dto/page/page.dto';
-import { PageMetaDto } from '@/libs/common/dto/page/page-meta.dto';
-import { HttpResponse } from '@/libs/common/dto/http-response';
 import { ChatResponseDto } from './dto/chat-response.dto';
 import { UsersService } from '@/domain/auth/users/users.service';
 import { JwtAuthGuard } from '@/domain/auth/guards/jwt-auth.guard';
 import RequestWithUser from '@/domain/auth/interfaces/request-with-user.interface';
-import { RedisCacheService } from '@/libs/common';
-import { NotEnoughUserInChatQueueException } from '@/domain/chat/exceptions/chatroom.exception';
-import { ChatroomService } from '@/domain/chat/chatroom/chatroom.service';
-import { CreateChatroomDto } from '@/domain/chat/dto/create-chatroom.dto';
-import { ChatRoomType } from '@/domain/chat/@types/enums/chatroomtype.enum';
-import { ChatroomResponseDto } from '@/domain/chat/dto/chatroom-response.dto';
+import { RedisCacheService } from '@/common';
+import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
+import { PageDto } from '@/common/dto/page/page.dto';
+import { PageMetaDto } from '@/common/dto/page/page-meta.dto';
+import { HttpResponse } from '@/common/dto/http-response';
+import { ChatRoomType } from '@/common/enums/chatroomtype.enum';
+import { ChatroomService } from '@/domain/chatroom/chatroom.service';
+import { CreateChatroomDto } from '@/domain/chatroom/dto/create-chatroom.dto';
+import { ChatroomResponseDto } from '@/domain/chatroom/dto/chatroom-response.dto';
+import { NotEnoughUserInChatQueueException } from '@/domain/chatroom/exceptions/chatroom.exception';
 
 @Controller('chat')
 export class ChatController {

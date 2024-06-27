@@ -1,5 +1,5 @@
-import { BaseException, UserExceptionEnum } from '@/libs/common';
 import { HttpStatus } from '@nestjs/common';
+import { BaseException, UserExceptionEnum } from '@/common';
 
 export class UserNotFoundException extends BaseException {
   constructor(message: string) {

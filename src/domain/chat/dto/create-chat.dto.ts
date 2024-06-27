@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { MessageType } from '@/domain/chat/@types/enums/message-type.enum';
+import { MessageType } from '@/common/enums/message-type.enum';
 
 export class CreateChatDto {
   @IsString()

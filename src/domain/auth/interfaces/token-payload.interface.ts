@@ -1,5 +1,5 @@
-import { Role } from '@/domain/auth/@types/enums/user.enum';
 import { Types } from 'mongoose';
+import { Role } from '@/common/enums/user.enum';
 
 interface TokenPayload {
   _id: Types.ObjectId;

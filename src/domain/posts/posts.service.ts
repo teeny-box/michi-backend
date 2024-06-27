@@ -1,9 +1,7 @@
-import { CounterService } from '@/libs/common';
 import { Injectable } from '@nestjs/common';
 import { PostsRepository } from './posts.repository';
 import { CreatePostDto } from './dto/create-post.dto';
 import { Post } from './schemas/post.schema';
-import { PageOptionsDto } from '@/libs/common/dto/page/page-options.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import {
   PostForbiddenException,
@@ -12,6 +10,8 @@ import {
 import { UsersService } from '@/domain/auth/users/users.service';
 import { User } from '@/domain/auth/users/schemas/user.schema';
 import { PostResponseDto } from './dto/post-response.dto';
+import { CounterService } from '@/common';
+import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
 
 @Injectable()
 export class PostsService {

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { AbstractDocument } from '@/libs/common';
+import { AbstractDocument } from '@/database/abstract.schema';
 
 @Schema({ timestamps: true, versionKey: false })
 export class Post extends AbstractDocument {
