@@ -14,6 +14,10 @@ import { NotificationModule } from '@/libs/common/notification/notification.modu
 import { NotificationProcessor } from '@/libs/common/notification/notification.processor';
 import { FirebaseAdminService } from '@/libs/common/firebase/firebase-admin.service';
 import { FirebaseAdminModule } from '@/libs/common/firebase/firebase-admin.module';
+import { AuthModule } from '@/domain/auth/auth.module';
+import { AuthService } from '@/domain/auth/auth.service';
+import { HttpModule } from '@nestjs/axios';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -29,6 +33,17 @@ import { FirebaseAdminModule } from '@/libs/common/firebase/firebase-admin.modul
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
     NotificationModule,
     FirebaseAdminModule,
+    AuthModule,
+    HttpModule,
+    JwtModule.registerAsync({
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: {
+          expiresIn: configService.get<string>('JWT_EXPIRATION_TIME'),
+        },
+      }),
+      inject: [ConfigService],
+    }),
   ],
   providers: [
     SocketGateway,
@@ -36,6 +51,7 @@ import { FirebaseAdminModule } from '@/libs/common/firebase/firebase-admin.modul
     UsersRepository,
     NotificationProcessor,
     FirebaseAdminService,
+    AuthService,
   ],
 })
 export class SocketModule {}

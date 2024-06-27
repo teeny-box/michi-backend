@@ -9,7 +9,6 @@ import {
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { UserNotFoundException } from '@/domain/auth/exceptions/users.exception';
 import { ChatroomNotFoundException } from '@/domain/chat/exceptions/chatroom.exception';
 import { UserResponseDto } from '@/domain/auth/users/dto/user-response.dto';
 import { InjectQueue } from '@nestjs/bull';
@@ -21,7 +20,11 @@ import { ChatroomService } from '@/domain/chat/chatroom/chatroom.service';
 import { CreateChatDto } from '@/domain/chat/dto/create-chat.dto';
 import { ChatResponseDto } from '@/domain/chat/dto/chat-response.dto';
 import { SendNotificationDto } from '@/domain/chat/socket/dto/send-notification.dto';
-import { NotificationTypeEnum } from '@/domain/chat/socket/@types/notification-type.enum';
+import { AuthService } from '@/domain/auth/auth.service';
+import { NoTokenProvidedException } from '@/domain/auth/exceptions/auth.exception';
+import { JoinChatroomDto } from '@/domain/chat/socket/dto/join-chatroom.dto';
+import { LeaveChatroomDto } from '@/domain/chat/socket/dto/leave-chatroom.dto';
+import { SendMessageDto } from '@/domain/chat/socket/dto/send-message.dto';
 
 const WELCOME_MESSAGE = '님이 입장하셨습니다';
 const GOODBYE_MESSAGE = '님이 퇴장하셨습니다';
@@ -37,47 +40,34 @@ const NEW_MESSAGE_TITLE = '새로운 메시지가 도착했습니다';
 })
 export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(SocketGateway.name);
+
+  @WebSocketServer()
+  server: Server;
+
   constructor(
     private readonly chatService: ChatService,
     private readonly chatroomService: ChatroomService,
     private readonly userService: UsersService,
     private readonly redisCacheService: RedisCacheService,
+    private readonly authService: AuthService,
     @InjectQueue('notification') private notificationQueue: Queue,
   ) {}
-  @WebSocketServer()
-  server: Server;
 
   async handleConnection(@ConnectedSocket() socket: Socket) {
-    const { userId } = socket.handshake.query;
+    const token = socket.handshake.headers.authorization;
+    if (!token)
+      throw new NoTokenProvidedException('토큰이 제공되지 않았습니다');
+
+    const user = await this.authService.getUserByToken(token);
+    socket.data.userId = user.userId;
+
     this.logger.log(
-      `Client connected: socket id - ${socket.id}, userId - ${userId}`,
+      `Client connected: socket id - ${socket.id}, userId - ${user.userId}`,
     );
 
-    // 온라인인 유저 집합에 추가
-    await this.redisCacheService.setUserOnline(userId as string);
+    await this.handleUserConnection(user.userId);
 
-    // 랜덤 채팅 큐에 유저 추가
-    if (await this.redisCacheService.isUserInChatQueue(userId as string)) {
-      await this.redisCacheService.addUserToChatQueue(userId as string);
-    }
-
-    // 채팅방 입장
-    socket.on('join', async (data) => {
-      try {
-        await this.handleJoin(socket, data);
-      } catch (error) {
-        this.logger.error(`Join error: ${error.message}`, error.stack);
-      }
-    });
-
-    // 채팅방 퇴장
-    socket.on('leave', async (data) => {
-      try {
-        await this.handleLeave(socket, data);
-      } catch (error) {
-        this.logger.error(`Leave error: ${error.message}`, error.stack);
-      }
-    });
+    this.setupSocketListeners(socket);
   }
 
   async handleDisconnect(@ConnectedSocket() socket: Socket) {
@@ -86,98 +76,138 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       `Client disconnected: socket id - ${socket.id}, userId - ${userId}`,
     );
 
+    await this.handleUserDisconnection(userId);
+  }
+
+  private async handleUserConnection(userId: string) {
+    await this.redisCacheService.setUserOnline(userId);
+    if (await this.redisCacheService.isUserInChatQueue(userId)) {
+      await this.redisCacheService.addUserToChatQueue(userId);
+    }
+  }
+
+  private async handleUserDisconnection(userId: string) {
     await this.redisCacheService.setUserOffline(userId);
     await this.redisCacheService.removeUserFromChatQueue(userId);
   }
 
+  private setupSocketListeners(socket: Socket) {
+    socket.on('join', (data) => this.handleJoin(socket, data));
+    socket.on('leave', (data) => this.handleLeave(socket, data));
+  }
+
   private async handleJoin(
-    @ConnectedSocket() socket: Socket,
-    data: { chatroomId: string; userId: string },
-  ) {
-    const { chatroomId, userId } = data;
-
-    // validate user and chatroom
-    const user = await this.userService.findByUserId(userId);
-    if (!user) throw new UserNotFoundException('해당 유저를 찾을 수 없습니다');
-
-    const chatroom = await this.chatroomService.findOne(chatroomId);
-    if (!chatroom)
-      throw new ChatroomNotFoundException('채팅방을 찾을 수 없습니다');
-
-    // join chatroom
-    await this.chatroomService.joinChatRoom(userId, chatroomId);
-    this.server.in(socket.id).socketsJoin(chatroomId);
-
-    this.server.to(chatroomId).emit('onJoin', {
-      message: `${user.nickname}${WELCOME_MESSAGE}`,
-      data: new UserResponseDto(user),
-    });
-  }
-
-  private async handleLeave(
-    @ConnectedSocket() socket: Socket,
-    data: { chatroomId: string; userId: string },
-  ) {
-    const { chatroomId, userId } = data;
-    const user = await this.userService.findByUserId(userId);
-
-    await this.chatroomService.leaveChatRoom(userId, chatroomId);
-    this.server.in(socket.id).socketsLeave(chatroomId);
-
-    this.server.to(chatroomId).emit('onLeave', {
-      message: `${user.nickname}${GOODBYE_MESSAGE}`,
-    });
-    socket.disconnect(true);
-  }
-
-  /**
-   * message 로 보내면, onMessage 로 받음
-   */
-  @SubscribeMessage('message')
-  async handleMessage(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: CreateChatDto,
+    data: JoinChatroomDto,
   ) {
     try {
-      const { chatroomId, userId } = payload;
-      const sender = await this.userService.findByUserId(userId);
-      const chat = await this.chatService.create(payload);
+      const { chatroomId } = data;
+      const userId = client.data.userId;
 
-      // Broadcast to all clients in the chatroom
-      this.server.to(chatroomId).emit('onMessage', {
-        message: MESSAGE_SUCCESS,
-        data: new ChatResponseDto(chat, sender),
+      const user = await this.userService.findByUserId(userId);
+      const chatroom = await this.chatroomService.findOne(chatroomId);
+
+      if (!chatroom)
+        throw new ChatroomNotFoundException('채팅방을 찾을 수 없습니다');
+
+      await this.chatroomService.joinChatRoom(userId, chatroomId);
+      this.server.in(client.id).socketsJoin(chatroomId);
+
+      this.server.to(chatroomId).emit('onJoin', {
+        message: `${user.nickname}${WELCOME_MESSAGE}`,
+        data: new UserResponseDto(user),
       });
-
-      // Get all clients in the chatroom
-      const receivers = await this.chatroomService.getReceivers(
-        chatroomId,
-        userId,
-      );
-      const tokens = await this.userService.getFcmTokensByUserIds(receivers);
-
-      // Push Notification
-      const notificationData = {
-        tokens: tokens,
-        sendNotificationDto: new SendNotificationDto(
-          NEW_MESSAGE_TITLE,
-          chat.message,
-        ),
-      };
-
-      await this.notificationQueue.add(
-        `send-push-notification`,
-        notificationData,
-        {
-          removeOnComplete: true,
-          removeOnFail: true,
-        },
-      );
     } catch (error) {
-      this.logger.error(`Message error: ${error.message}`, error.stack);
+      this.logger.error(`Join error: ${error.message}`, error.stack);
       client.emit('onError', {
         message: error.message,
       });
     }
+  }
+
+  private async handleLeave(
+    @ConnectedSocket() client: Socket,
+    data: LeaveChatroomDto,
+  ) {
+    const { chatroomId } = data;
+    const userId = client.data.userId;
+
+    const user = await this.userService.findByUserId(userId);
+    await this.chatroomService.leaveChatRoom(userId, chatroomId);
+    this.server.in(client.id).socketsLeave(chatroomId);
+
+    this.server.to(chatroomId).emit('onLeave', {
+      message: `${user.nickname}${GOODBYE_MESSAGE}`,
+    });
+    client.disconnect(true);
+  }
+
+  @SubscribeMessage('message')
+  async handleMessage(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: SendMessageDto,
+  ) {
+    try {
+      const userId = client.data.userId;
+      const chat = await this.createAndBroadcastMessage(userId, payload);
+      await this.sendPushNotifications(userId, payload.chatroomId, chat);
+    } catch (error) {
+      this.handleError(client, 'Message error', error);
+    }
+  }
+
+  private async createAndBroadcastMessage(
+    userId: string,
+    payload: SendMessageDto,
+  ) {
+    const sender = await this.userService.findByUserId(userId);
+    const chat = await this.chatService.create({
+      ...payload,
+      userId,
+    } as CreateChatDto);
+
+    const chatResponse = new ChatResponseDto(chat, sender);
+    this.server.to(payload.chatroomId).emit('onMessage', {
+      message: MESSAGE_SUCCESS,
+      data: chatResponse,
+    });
+
+    return chatResponse;
+  }
+
+  private async sendPushNotifications(
+    userId: string,
+    chatroomId: string,
+    chat: ChatResponseDto,
+  ) {
+    const receivers = await this.chatroomService.getReceivers(
+      chatroomId,
+      userId,
+    );
+    const tokens = await this.userService.getFcmTokensByUserIds(receivers);
+
+    const notificationData = {
+      tokens: tokens,
+      sendNotificationDto: new SendNotificationDto(
+        NEW_MESSAGE_TITLE,
+        chat.message,
+      ),
+    };
+
+    await this.notificationQueue.add(
+      `send-push-notification`,
+      notificationData,
+      {
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
+    );
+  }
+
+  private handleError(socket: Socket, context: string, error: Error) {
+    this.logger.error(`${context} error: ${error.message}`, error.stack);
+    socket.emit('onError', {
+      message: error.message,
+    });
   }
 }
