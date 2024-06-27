@@ -4,6 +4,7 @@ import { NotificationTypeEnum } from '@/common/enums/notification-type.enum';
 type PriorityType = 'high' | 'normal';
 
 export class SendNotificationDto {
+  tokens: string[];
   @IsString()
   title: string;
   @IsString()

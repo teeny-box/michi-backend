@@ -22,9 +22,10 @@ import { RedisCacheService } from '@/common';
 import { JoinChatroomDto } from '@/domain/socket/dto/join-chatroom.dto';
 import { LeaveChatroomDto } from '@/domain/socket/dto/leave-chatroom.dto';
 import { SendMessageDto } from '@/domain/socket/dto/send-message.dto';
-import { SendNotificationDto } from '@/domain/socket/dto/send-notification.dto';
 import { ChatroomService } from '@/domain/chatroom/chatroom.service';
 import { ChatroomNotFoundException } from '@/domain/chatroom/exceptions/chatroom.exception';
+import { SendNotificationDto } from '@/domain/notification/dto/send-notification.dto';
+import { UserNotFoundException } from '@/domain/auth/exceptions/users.exception';
 
 const WELCOME_MESSAGE = '님이 입장하셨습니다';
 const GOODBYE_MESSAGE = '님이 퇴장하셨습니다';
@@ -55,10 +56,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(@ConnectedSocket() socket: Socket) {
     const token = socket.handshake.headers.authorization;
-    if (!token)
+    if (!token || token.length === 0)
       throw new NoTokenProvidedException('토큰이 제공되지 않았습니다');
 
     const user = await this.authService.getUserByToken(token);
+    if (!user) throw new UserNotFoundException('사용자를 찾을 수 없습니다');
     socket.data.userId = user.userId;
 
     this.logger.log(

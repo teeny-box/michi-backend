@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as admin from 'firebase-admin';
-import { SendNotificationDto } from '@/domain/socket/dto/send-notification.dto';
+import { SendNotificationDto } from '@/domain/notification/dto/send-notification.dto';
 
 @Injectable()
 export class FirebaseAdminService {
