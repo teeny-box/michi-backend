@@ -13,7 +13,7 @@ export class ChatResponseDto {
   readonly chatroomId: string;
 
   @IsEnum(MessageType)
-  readonly messageType: MessageType;
+  readonly messageType: MessageType = MessageType.TEXT;
 
   @IsString()
   @IsNotEmpty()
@@ -23,5 +23,6 @@ export class ChatResponseDto {
     this.message = chat.message;
     this.user = new UserResponseDto(user);
     this.createdAt = chat.createdAt;
+    this.messageType = chat.messageType;
   }
 }
