@@ -139,7 +139,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(chatroomId).emit('onLeave', {
       message: `${user.nickname}${GOODBYE_MESSAGE}`,
     });
-    client.disconnect(true);
   }
 
   @SubscribeMessage('message')
