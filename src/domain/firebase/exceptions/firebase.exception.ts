@@ -10,3 +10,13 @@ export class FirebaseUnsubscribeException extends BaseException {
     );
   }
 }
+
+export class FirebaseSubscribeException extends BaseException {
+  constructor(message: string) {
+    super(
+      FirebaseExceptionEnum.SUBSCRIBE_FAILED,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      message,
+    );
+  }
+}

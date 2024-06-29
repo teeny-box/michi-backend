@@ -33,6 +33,7 @@ export enum PostExceptionEnum {
 
 export enum FirebaseExceptionEnum {
   UNSUBSCRIBE_FAILED = '4000',
+  SUBSCRIBE_FAILED = '4001',
 }
 
 export enum DeviceExceptionEnum {

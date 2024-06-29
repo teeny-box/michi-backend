@@ -23,8 +23,9 @@ export class UserDeviceService {
       fcmRegistrationToken,
     });
 
+    let device;
     if (existingDevice) {
-      return this.userDeviceRepository.findOneAndUpdate(
+      device = await this.userDeviceRepository.findOneAndUpdate(
         { _id: existingDevice._id },
         {
           clientInfo,
@@ -33,12 +34,18 @@ export class UserDeviceService {
         },
       );
     } else {
-      return this.userDeviceRepository.create({
+      device = await this.userDeviceRepository.create({
         userId,
         clientInfo,
         fcmRegistrationToken,
       });
     }
+
+    await this.firebaseAdminService.subscribeToGlobalTopic(
+      fcmRegistrationToken,
+    );
+
+    return device;
   }
 
   async getUserDevices(userId: string) {

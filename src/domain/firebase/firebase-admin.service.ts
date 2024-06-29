@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as admin from 'firebase-admin';
 import { NotificationPayload } from '@/domain/notification/schemas/notification-payload.interface';
+import { FirebaseSubscribeException } from '@/domain/firebase/exceptions/firebase.exception';
 
 @Injectable()
 export class FirebaseAdminService {
@@ -57,6 +58,18 @@ export class FirebaseAdminService {
       .catch((error) => {
         console.error('Error sending message:', error);
       });
+  }
+
+  async subscribeToGlobalTopic(fcmRegistrationToken: string) {
+    try {
+      await admin.messaging().subscribeToTopic(fcmRegistrationToken, 'global');
+      return true;
+    } catch (error) {
+      console.error('Error subscribing to global topic:', error);
+      throw new FirebaseSubscribeException(
+        'Failed to subscribe to global topic',
+      );
+    }
   }
 
   async unsubscribeFromGlobalTopic(fcmRegistrationToken: string) {
