@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as admin from 'firebase-admin';
-import { SendNotificationDto } from '@/domain/notification/dto/send-notification.dto';
+import { NotificationPayload } from '@/domain/notification/schemas/notification-payload.interface';
 
 @Injectable()
 export class FirebaseAdminService {
@@ -30,34 +30,44 @@ export class FirebaseAdminService {
     }
   }
 
-  async sendPushNotification(
-    tokens: string[],
-    sendNotificationDto: SendNotificationDto,
-  ) {
-    const payload = {
+  async sendPushNotification(tokens: string[], payload: NotificationPayload) {
+    const message = {
       tokens: tokens,
-      data: {
-        title: sendNotificationDto.title,
-        body: sendNotificationDto.body,
+      notification: {
+        title: payload.title,
+        body: payload.message,
       },
-      contentAvailable: sendNotificationDto.contentAvailable || true,
-      priority: sendNotificationDto.priority || 'high',
+      data: payload.data,
+      priority: payload.priority || 'high',
+      contentAvailable: payload.contentAvailable || true,
     };
 
-    console.log('Sending push notification', payload);
+    if (payload.deepLink) {
+      message.data = { ...message.data, deepLink: payload.deepLink };
+    }
 
-    if (!tokens.length) return;
+    console.log('Sending message:', message);
 
     return await admin
       .messaging()
-      .sendEachForMulticast(payload)
+      .sendEachForMulticast(message)
       .then((response) => {
-        console.log(response);
-        return { sent_message: response };
+        console.log('Successfully sent message:', response);
       })
       .catch((error) => {
-        console.error('Firebase error', error);
-        return { error_code: error.code, error_message: error.message };
+        console.error('Error sending message:', error);
       });
+  }
+
+  async unsubscribeFromGlobalTopic(fcmRegistrationToken: string) {
+    try {
+      await admin
+        .messaging()
+        .unsubscribeFromTopic(fcmRegistrationToken, 'global');
+      return true;
+    } catch (error) {
+      console.error('Error unsubscribing from global topic:', error);
+      return false;
+    }
   }
 }

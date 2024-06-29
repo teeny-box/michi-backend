@@ -28,6 +28,16 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
     ).toJSON() as unknown as TDocument;
   }
 
+  async createMany(documents: Partial<TDocument>[], options?: SaveOptions) {
+    return (await this.model.insertMany(
+      documents.map((document) => ({
+        ...document,
+        _id: new Types.ObjectId(),
+      })),
+      options,
+    )) as unknown as TDocument[];
+  }
+
   async findOne(filterQuery: FilterQuery<TDocument>) {
     const document = await this.model.findOne(filterQuery, {}, { lean: true });
 

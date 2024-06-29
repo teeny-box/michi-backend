@@ -31,6 +31,10 @@ export enum PostExceptionEnum {
   POST_NOT_FOUND = '3040',
 }
 
-export enum NotificationExceptionEnum {
-  FCM_SEND_FAILED = '3100',
+export enum FirebaseExceptionEnum {
+  UNSUBSCRIBE_FAILED = '4000',
+}
+
+export enum DeviceExceptionEnum {
+  USER_DEVICE_NOT_FOUND = '5040',
 }

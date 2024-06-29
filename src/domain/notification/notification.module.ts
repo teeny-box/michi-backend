@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
-import { FirebaseAdminService } from '@/domain/firebase/firebase-admin.service';
-import { FirebaseAdminModule } from '@/domain/firebase/firebase-admin.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { NotificationSchema } from '@/domain/notification/schemas/notification.schema';
+import { NotificationService } from '@/domain/notification/notification.service';
+import { NotificationRepository } from '@/domain/notification/notification.repository';
+import { NotificationController } from '@/domain/notification/notification.controller';
 
 @Module({
   imports: [
@@ -16,9 +19,15 @@ import { FirebaseAdminModule } from '@/domain/firebase/firebase-admin.module';
     BullModule.registerQueue({
       name: 'notification',
     }),
-    FirebaseAdminModule,
+    MongooseModule.forFeature([
+      {
+        name: 'Notification',
+        schema: NotificationSchema,
+      },
+    ]),
   ],
-  providers: [FirebaseAdminService],
-  exports: [BullModule],
+  controllers: [NotificationController],
+  providers: [NotificationService, NotificationRepository],
+  exports: [BullModule, NotificationService, NotificationRepository],
 })
 export class NotificationModule {}

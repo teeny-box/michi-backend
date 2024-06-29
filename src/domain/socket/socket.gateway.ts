@@ -10,8 +10,6 @@ import {
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { UserResponseDto } from '@/domain/auth/users/dto/user-response.dto';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
 import { UsersService } from '@/domain/auth/users/users.service';
 import { ChatService } from '@/domain/chat/chat.service';
 import { CreateChatDto } from '@/domain/chat/dto/create-chat.dto';
@@ -24,8 +22,9 @@ import { LeaveChatroomDto } from '@/domain/socket/dto/leave-chatroom.dto';
 import { SendMessageDto } from '@/domain/socket/dto/send-message.dto';
 import { ChatroomService } from '@/domain/chatroom/chatroom.service';
 import { ChatroomNotFoundException } from '@/domain/chatroom/exceptions/chatroom.exception';
-import { SendNotificationDto } from '@/domain/notification/dto/send-notification.dto';
 import { UserNotFoundException } from '@/domain/auth/exceptions/users.exception';
+import { NotificationService } from '@/domain/notification/notification.service';
+import { NotificationType } from '@/common/enums/notification-type.enum';
 
 const WELCOME_MESSAGE = '님이 입장하셨습니다';
 const GOODBYE_MESSAGE = '님이 퇴장하셨습니다';
@@ -51,7 +50,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly userService: UsersService,
     private readonly redisCacheService: RedisCacheService,
     private readonly authService: AuthService,
-    @InjectQueue('notification') private notificationQueue: Queue,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async handleConnection(@ConnectedSocket() socket: Socket) {
@@ -199,28 +198,24 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     chatroomId: string,
     chat: ChatResponseDto,
   ) {
-    const receivers = await this.chatroomService.getReceivers(
+    const receiverIds = await this.chatroomService.getReceivers(
       chatroomId,
       userId,
     );
-    const tokens = await this.userService.getFcmTokensByUserIds(receivers);
 
-    const notificationData = {
-      tokens: tokens,
-      sendNotificationDto: new SendNotificationDto(
-        NEW_MESSAGE_TITLE,
-        chat.message,
-      ),
-    };
-
-    await this.notificationQueue.add(
-      `send-push-notification`,
-      notificationData,
-      {
-        removeOnComplete: true,
-        removeOnFail: true,
+    await this.notificationService.sendNotifications(receiverIds, {
+      type: NotificationType.CHAT_MESSAGE,
+      title: NEW_MESSAGE_TITLE,
+      message: chat.message,
+      contentAvailable: true,
+      priority: 'high',
+      deepLink: `chatroom/${chatroomId}`,
+      data: {
+        chatroomId,
+        senderId: userId,
+        messageType: chat.messageType,
       },
-    );
+    });
   }
 
   private handleError(socket: Socket, context: string, error: Error) {

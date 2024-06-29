@@ -1,5 +1,5 @@
-export enum NotificationTypeEnum {
-  CHAT = 'chat',
-  FRIEND = 'friend',
-  REMINDER = 'reminder',
+export enum NotificationType {
+  CHAT_MESSAGE = 'CHAT_MESSAGE',
+  FRIEND_REQUEST = 'FRIEND_REQUEST',
+  SYSTEM_NOTIFICATION = 'SYSTEM_NOTIFICATION',
 }
