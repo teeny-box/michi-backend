@@ -34,6 +34,9 @@ export class User extends AbstractDocument {
   @Prop({ type: String, default: null })
   fcmToken?: string;
 
+  @Prop({ type: Date, default: Date.now })
+  notificationCheckedAt: Date;
+
   @Prop({ type: Date })
   createdAt: Date;
 

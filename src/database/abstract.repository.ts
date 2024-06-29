@@ -14,7 +14,7 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
   protected abstract readonly logger: Logger;
 
   constructor(
-    private readonly model: Model<TDocument>,
+    protected readonly model: Model<TDocument>,
     private readonly connection: Connection,
   ) {}
 
