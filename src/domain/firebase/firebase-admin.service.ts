@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as admin from 'firebase-admin';
-import { NotificationPayload } from '@/domain/notification/schemas/notification-payload.interface';
 import { FirebaseSubscribeException } from '@/domain/firebase/exceptions/firebase.exception';
+import { MulticastMessage } from 'firebase-admin/lib/messaging';
 
 @Injectable()
 export class FirebaseAdminService {
@@ -31,27 +31,37 @@ export class FirebaseAdminService {
     }
   }
 
-  async sendPushNotification(tokens: string[], payload: NotificationPayload) {
+  async sendPushNotification(multicastMessage: MulticastMessage) {
+    return await admin
+      .messaging()
+      .sendEachForMulticast(multicastMessage)
+      .then((response) => {
+        console.log('Successfully sent message:', response);
+        return { send_message: response };
+      })
+      .catch((error) => {
+        console.error('Error sending message:', error);
+        return { error_code: error.code, error_message: error.message };
+      });
+  }
+
+  async sendGlobalPushNotification(
+    title: string,
+    body: string,
+    data?: Record<string, string>,
+  ) {
     const message = {
-      tokens: tokens,
+      topic: 'global',
       notification: {
-        title: payload.title,
-        body: payload.message,
+        title,
+        body,
       },
-      data: payload.data,
-      priority: payload.priority || 'high',
-      contentAvailable: payload.contentAvailable || true,
+      data,
     };
-
-    if (payload.deepLink) {
-      message.data = { ...message.data, deepLink: payload.deepLink };
-    }
-
-    console.log('Sending message:', message);
 
     return await admin
       .messaging()
-      .sendEachForMulticast(message)
+      .send(message)
       .then((response) => {
         console.log('Successfully sent message:', response);
       })

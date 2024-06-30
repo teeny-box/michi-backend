@@ -15,7 +15,7 @@ export class Notification extends AbstractDocument {
   title: string;
 
   @Prop({ type: String, required: true })
-  message: string;
+  body: string;
 
   @Prop({ type: String, enum: NotificationType, required: true })
   type: NotificationType;
@@ -23,10 +23,8 @@ export class Notification extends AbstractDocument {
   @Prop({ type: Boolean, default: true, required: false })
   contentAvailable?: boolean;
 
-  priority?: PushMessagePriority;
-
   @Prop({ type: String, default: null, required: false })
-  deepLink?: string;
+  priority?: PushMessagePriority;
 
   @Prop({ type: Object, default: null, required: false })
   data?: Record<string, string>;

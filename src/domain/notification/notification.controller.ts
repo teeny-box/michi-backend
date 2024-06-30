@@ -1,4 +1,12 @@
-import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { NotificationService } from '@/domain/notification/notification.service';
 import { JwtAuthGuard } from '@/domain/auth/guards/jwt-auth.guard';
 import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
@@ -6,13 +14,14 @@ import RequestWithUser from '@/domain/auth/interfaces/request-with-user.interfac
 import { PageMetaDto } from '@/common/dto/page/page-meta.dto';
 import { PageDto } from '@/common/dto/page/page.dto';
 import { HttpResponse } from '@/common/dto/http-response';
+import { SendNotificationDto } from '@/domain/notification/dto/send-notification.dto';
 
 @Controller('notifications')
+@UseGuards(JwtAuthGuard)
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
   @Get('')
-  @UseGuards(JwtAuthGuard)
   async findAll(
     @Req() req: RequestWithUser,
     @Query() pageOptionsDto: PageOptionsDto,
@@ -31,9 +40,17 @@ export class NotificationController {
   }
 
   @Get('unread-count')
-  @UseGuards(JwtAuthGuard)
   async getUnreadCount(@Req() req: RequestWithUser) {
     const result = await this.notificationService.getUnreadCount(req.user);
     return HttpResponse.success(`조회가 완료되었습니다.`, result);
+  }
+
+  @Post('global')
+  async sendGlobalNotification(
+    @Req() req: RequestWithUser,
+    @Body() payload: SendNotificationDto,
+  ) {
+    await this.notificationService.sendGlobalNotification(payload);
+    return HttpResponse.success(`전체 공지 전송이 완료되었습니다.`);
   }
 }

@@ -3,14 +3,18 @@ import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
 import { User } from '@/domain/auth/users/schemas/user.schema';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { NotificationPayload } from '@/domain/notification/schemas/notification-payload.interface';
 import { Injectable } from '@nestjs/common';
+import { UserDeviceService } from '@/domain/device/user-device.service';
+import { SendNotificationDto } from '@/domain/notification/dto/send-notification.dto';
+import { MulticastMessage } from 'firebase-admin/lib/messaging';
 
 @Injectable()
 export class NotificationService {
   constructor(
     private readonly notificationRepository: NotificationRepository,
+    private readonly userDeviceService: UserDeviceService,
     @InjectQueue('notification') private notificationQueue: Queue,
+    @InjectQueue('global-notification') private globalNotificationQueue: Queue,
   ) {}
 
   async findAll(pageOptionsDto: PageOptionsDto, userId: string) {
@@ -24,45 +28,61 @@ export class NotificationService {
     );
   }
 
-  async sendNotification(userId: string, payload: NotificationPayload) {
-    const notification = await this.notificationRepository.create({
-      userId,
-      title: payload.title,
-      message: payload.message,
-      type: payload.type,
-      contentAvailable: payload.contentAvailable,
-      priority: payload.priority,
-      deepLink: payload.deepLink,
-      data: payload.data,
-    });
-
-    await this.notificationQueue.add('send-push-notification', {
-      userId,
-      payload,
-    });
-
-    return notification;
-  }
-
-  async sendNotifications(userIds: string[], payload: NotificationPayload) {
+  async sendNotifications(userIds: string[], payload: SendNotificationDto) {
     const notifications = await this.notificationRepository.createMany(
       userIds.map((userId) => ({
         userId,
-        title: payload.title,
-        message: payload.message,
-        type: payload.type,
-        contentAvailable: payload.contentAvailable,
-        priority: payload.priority,
-        deepLink: payload.deepLink,
-        data: payload.data,
+        ...payload,
       })),
     );
+    const tokens = await this.userDeviceService.getFcmTokensByUserIds(userIds);
 
-    await this.notificationQueue.add('send-push-notifications', {
-      userIds,
-      payload,
-    });
+    const multicastMessage: MulticastMessage = {
+      tokens,
+      notification: {
+        title: payload.title,
+        body: payload.body,
+      },
+      data: payload.data,
+      android: {
+        priority: payload.priority || 'high',
+      },
+      apns: {
+        payload: {
+          aps: {
+            contentAvailable: payload.contentAvailable || true,
+          },
+        },
+      },
+    };
+
+    await this.notificationQueue.add(
+      'send-push-notification',
+      { multicastMessage },
+      {
+        removeOnFail: true,
+        removeOnComplete: true,
+      },
+    );
 
     return notifications;
+  }
+
+  async sendGlobalNotification(payload: SendNotificationDto) {
+    const notification = await this.notificationRepository.create({
+      userId: 'global',
+      ...payload,
+    });
+
+    await this.globalNotificationQueue.add(
+      'send-global-push-notification',
+      { notification },
+      {
+        removeOnFail: true,
+        removeOnComplete: true,
+      },
+    );
+
+    return notification;
   }
 }
