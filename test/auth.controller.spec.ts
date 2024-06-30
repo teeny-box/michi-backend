@@ -1,33 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Types } from 'mongoose';
 import { HttpResponse } from '@/common/dto/http-response';
 import { AuthController } from '@/domain/auth/auth.controller';
 import { AuthService } from '@/domain/auth/auth.service';
-import { User } from '@/domain/auth/users/schemas/user.schema';
-import { Role, State } from '@/common/enums/user.enum';
 import { CreateUserDto } from '@/domain/auth/users/dto/create-user.dto';
 import { AuthVerificationDto } from '@/domain/auth/users/dto/auth-verification.dto';
 import { CheckForPasswordDto } from '@/domain/auth/users/dto/check-for-password.dto';
+import { mockUser } from './mocks/user.mock';
 
 describe('AuthController', () => {
   let authController: AuthController;
   let authService: AuthService;
-
-  const mockUser: User = {
-    _id: new Types.ObjectId(),
-    userId: 'testuser',
-    password: 'hashedPassword',
-    nickname: 'Test User',
-    userName: 'Test Name',
-    phoneNumber: '010-1234-5678',
-    birthYear: '1990',
-    profileImage: 'image',
-    role: Role.USER,
-    state: State.JOINED,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: new Date(),
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

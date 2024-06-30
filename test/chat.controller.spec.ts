@@ -16,8 +16,6 @@ import { ChatroomService } from '@/domain/chatroom/chatroom.service';
 
 describe('ChatController', () => {
   let chatController: ChatController;
-  let chatService: ChatService;
-  let usersService: UsersService;
 
   const mockChatService = {
     find: jest.fn(),
@@ -48,8 +46,6 @@ describe('ChatController', () => {
     }).compile();
 
     chatController = app.get<ChatController>(ChatController);
-    chatService = app.get<ChatService>(ChatService);
-    usersService = app.get<UsersService>(UsersService);
   });
 
   it('should be defined', () => {
@@ -98,6 +94,7 @@ describe('ChatController', () => {
           profileImage: 'profile1',
           role: Role.USER,
           state: State.JOINED,
+          notificationCheckedAt: new Date(),
           deletedAt: null,
           createdAt: undefined,
           updatedAt: undefined,
@@ -113,6 +110,7 @@ describe('ChatController', () => {
           profileImage: 'profile1',
           role: Role.USER,
           state: State.JOINED,
+          notificationCheckedAt: new Date(),
           deletedAt: null,
           createdAt: undefined,
           updatedAt: undefined,

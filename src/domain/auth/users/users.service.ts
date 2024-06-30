@@ -136,16 +136,4 @@ export class UsersService {
     );
     await this.redisCacheService.del(_id.toString());
   }
-
-  // FCM 토큰 등록
-  async registerFcmToken(userId: string, fcmToken: string): Promise<void> {
-    await this.usersRepository.findOneAndUpdate({ userId }, { fcmToken });
-  }
-
-  async getFcmTokensByUserIds(userIds: string[]): Promise<string[]> {
-    const { results } = await this.usersRepository.find({
-      userId: { $in: userIds },
-    });
-    return results.map((user) => user.fcmToken).filter(Boolean);
-  }
 }

@@ -8,11 +8,11 @@ import { Socket, io } from 'socket.io-client';
 import { RedisCacheService } from '@/common';
 import { SocketGateway } from '@/domain/socket/socket.gateway';
 import { ChatroomService } from '@/domain/chatroom/chatroom.service';
+import { NotificationService } from '@/domain/notification/notification.service';
 
 describe('SocketGateway', () => {
   let app: INestApplication;
   let socketClient: Socket;
-  let authService: AuthService;
 
   const mockChatService = {
     create: jest.fn(),
@@ -37,9 +37,7 @@ describe('SocketGateway', () => {
   const mockAuthService = {
     getUserByToken: jest.fn(),
   };
-  const mockQueue = {
-    add: jest.fn(),
-  };
+  const mockNotificationService = {};
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -50,7 +48,7 @@ describe('SocketGateway', () => {
         { provide: UsersService, useValue: mockUsersService },
         { provide: RedisCacheService, useValue: mockRedisCacheService },
         { provide: AuthService, useValue: mockAuthService },
-        { provide: getQueueToken('notification'), useValue: mockQueue },
+        { provide: NotificationService, useValue: mockNotificationService },
       ],
     }).compile();
 
@@ -64,8 +62,6 @@ describe('SocketGateway', () => {
       autoConnect: false,
       transports: ['websocket'],
     });
-
-    authService = moduleFixture.get<AuthService>(AuthService);
   });
 
   afterAll(async () => {
