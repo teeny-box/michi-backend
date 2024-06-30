@@ -206,7 +206,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const sendNotificationDto = new SendNotificationDto(
       SOCKET_MESSAGES.NEW_MESSAGE_TITLE,
       chat.message,
-      NotificationType.CHAT_MESSAGE,
       true,
       'high',
       { chatroomId },

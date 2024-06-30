@@ -1,6 +1,5 @@
-import { NotificationType } from '@/common/enums/notification-type.enum';
 import { PushMessagePriority } from '@/domain/notification/@types/push-message-prirority.type';
-import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class SendNotificationDto {
   @IsString()
@@ -8,9 +7,6 @@ export class SendNotificationDto {
 
   @IsString()
   body: string;
-
-  @IsEnum(NotificationType)
-  type: NotificationType = NotificationType.CHAT_MESSAGE;
 
   @IsBoolean()
   @IsOptional()
@@ -26,14 +22,12 @@ export class SendNotificationDto {
   constructor(
     title: string,
     body: string,
-    type?: NotificationType,
     contentAvailable?: boolean,
     priority?: PushMessagePriority,
     data?: Record<string, string>,
   ) {
     this.title = title;
     this.body = body;
-    this.type = type;
     this.contentAvailable = contentAvailable;
     this.priority = priority;
     this.data = data;

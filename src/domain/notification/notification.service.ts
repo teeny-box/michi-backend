@@ -7,6 +7,7 @@ import { Injectable } from '@nestjs/common';
 import { UserDeviceService } from '@/domain/device/user-device.service';
 import { SendNotificationDto } from '@/domain/notification/dto/send-notification.dto';
 import { MulticastMessage } from 'firebase-admin/lib/messaging';
+import { NotificationType } from '@/common/enums/notification-type.enum';
 
 @Injectable()
 export class NotificationService {
@@ -32,6 +33,7 @@ export class NotificationService {
     const notifications = await this.notificationRepository.createMany(
       userIds.map((userId) => ({
         userId,
+        type: NotificationType.CHAT_MESSAGE,
         ...payload,
       })),
     );
@@ -71,6 +73,7 @@ export class NotificationService {
   async sendGlobalNotification(payload: SendNotificationDto) {
     const notification = await this.notificationRepository.create({
       userId: 'global',
+      type: NotificationType.SYSTEM_NOTIFICATION,
       ...payload,
     });
 
