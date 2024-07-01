@@ -11,7 +11,7 @@ import {
 import { CreateUserDeviceDto } from '@/domain/device/dto/create-user-device.dto';
 import { UserDeviceService } from '@/domain/device/user-device.service';
 import { JwtAuthGuard } from '@/domain/auth/guards/jwt-auth.guard';
-import RequestWithUser from '@/domain/auth/interfaces/request-with-user.interface';
+import RequestWithUser from '@/common/interfaces/request-with-user.interface';
 import { HttpResponse } from '@/common/dto/http-response';
 
 @Controller('devices')

@@ -10,7 +10,7 @@ import {
 import { NotificationService } from '@/domain/notification/notification.service';
 import { JwtAuthGuard } from '@/domain/auth/guards/jwt-auth.guard';
 import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
-import RequestWithUser from '@/domain/auth/interfaces/request-with-user.interface';
+import RequestWithUser from '@/common/interfaces/request-with-user.interface';
 import { PageMetaDto } from '@/common/dto/page/page-meta.dto';
 import { PageDto } from '@/common/dto/page/page.dto';
 import { HttpResponse } from '@/common/dto/http-response';

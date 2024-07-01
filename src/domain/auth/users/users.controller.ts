@@ -5,19 +5,24 @@ import {
   Get,
   Param,
   Patch,
-  Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '@/domain/auth/guards/jwt-auth.guard';
-import RequestWithUser from '@/domain/auth/interfaces/request-with-user.interface';
+import RequestWithUser from '@/common/interfaces/request-with-user.interface';
 import { OneTimeAuthGuard } from '@/domain/auth/guards/one-time-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { RegisterFcmTokenDto } from '@/domain/auth/users/dto/register-fcm-token.dto';
 import { RedisCacheService } from '@/common';
 import { HttpResponse } from '@/common/dto/http-response';
+import { RolesGuard } from '../guards/roles.guard';
+import { Roles } from '@/common/decorators/role.decorator';
+import { Role } from '@/common/enums/user.enum';
+import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
+import { PageDto } from '@/common/dto/page/page.dto';
+import { PageMetaDto } from '@/common/dto/page/page-meta.dto';
 
 @Controller('users')
 export class UsersController {
@@ -42,6 +47,18 @@ export class UsersController {
   async checkNickname(@Param('nickname') nickname: string) {
     await this.usersService.checkNickname(nickname);
     return HttpResponse.success('사용 가능한 닉네임입니다.');
+  }
+
+  @Get('/admin/users')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async findAll(@Query() pageOptionsDto?: PageOptionsDto) {
+    const { users, total } = await this.usersService.findAll(pageOptionsDto);
+    const { data, meta } = new PageDto(
+      users,
+      new PageMetaDto(pageOptionsDto, total),
+    );
+    return HttpResponse.success('모든 회원이 조회되었습니다.', data, meta);
   }
 
   @Get()

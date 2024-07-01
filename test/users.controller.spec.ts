@@ -3,11 +3,13 @@ import { RedisCacheService } from '@/common';
 import { HttpResponse } from '@/common/dto/http-response';
 import { UsersController } from '@/domain/auth/users/users.controller';
 import { UsersService } from '@/domain/auth/users/users.service';
-import RequestWithUser from '@/domain/auth/interfaces/request-with-user.interface';
+import RequestWithUser from '@/common/interfaces/request-with-user.interface';
 import { UpdateUserDto } from '@/domain/auth/users/dto/update-user.dto';
 import { ChangePasswordDto } from '@/domain/auth/users/dto/change-password.dto';
-import { RegisterFcmTokenDto } from '@/domain/auth/users/dto/register-fcm-token.dto';
 import { mockUser } from './mocks/user.mock';
+import { PageMetaDto } from '@/common/dto/page/page-meta.dto';
+import { UserResponseDto } from '@/domain/auth/users/dto/user-response.dto';
+import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
 
 describe('UsersController', () => {
   let usersController: UsersController;
@@ -27,7 +29,7 @@ describe('UsersController', () => {
             update: jest.fn(),
             changePassword: jest.fn(),
             remove: jest.fn(),
-            registerFcmToken: jest.fn(),
+            findAll: jest.fn(),
           },
         },
         {
@@ -74,6 +76,34 @@ describe('UsersController', () => {
       const response = await usersController.checkNickname('testNickname');
       expect(response).toEqual(
         HttpResponse.success('사용 가능한 닉네임입니다.'),
+      );
+    });
+  });
+
+  describe('findAll', () => {
+    it('should find all users', async () => {
+      const pageOptionsDto: PageOptionsDto = {
+        page: 1,
+        pageSize: 10,
+        skip: 0,
+      };
+
+      const mockUsers = [mockUser];
+      const mockTotal = 2;
+      const expectedUsers = mockUsers.map((user) => new UserResponseDto(user));
+
+      jest.spyOn(usersService, 'findAll').mockImplementation(async () => ({
+        users: expectedUsers,
+        total: mockTotal,
+      }));
+
+      const result = await usersController.findAll(pageOptionsDto);
+      expect(result).toEqual(
+        HttpResponse.success(
+          '모든 회원이 조회되었습니다.',
+          expectedUsers,
+          new PageMetaDto(pageOptionsDto, mockTotal),
+        ),
       );
     });
   });

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Request } from 'express';
-import TokenPayload from '../interfaces/token-payload.interface';
+import TokenPayload from '@/common/interfaces/token-payload.interface';
 import { AuthService } from '../auth.service';
 import { NotExpiredAccessTokenException } from '@/domain/auth/exceptions/auth.exception';
 import { RedisCacheService } from '@/common';

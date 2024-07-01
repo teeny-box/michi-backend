@@ -2,7 +2,7 @@ import { PostsController } from '@/domain/posts/posts.controller';
 import { PostsService } from '@/domain/posts/posts.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreatePostDto } from '@/domain/posts/dto/create-post.dto';
-import RequestWithUser from '@/domain/auth/interfaces/request-with-user.interface';
+import RequestWithUser from '@/common/interfaces/request-with-user.interface';
 import { HttpResponse } from '@/common/dto/http-response';
 import { PostResponseDto } from '@/domain/posts/dto/post-response.dto';
 import { PageOptionsDto } from '@/common/dto/page/page-options.dto';

@@ -11,7 +11,7 @@ import { ChatService } from './chat.service';
 import { ChatResponseDto } from './dto/chat-response.dto';
 import { UsersService } from '@/domain/auth/users/users.service';
 import { JwtAuthGuard } from '@/domain/auth/guards/jwt-auth.guard';
-import RequestWithUser from '@/domain/auth/interfaces/request-with-user.interface';
+import RequestWithUser from '@/common/interfaces/request-with-user.interface';
 import { RedisCacheService } from '@/common';
 import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
 import { PageDto } from '@/common/dto/page/page.dto';
