@@ -15,6 +15,8 @@ import { Types } from 'mongoose';
 import { RedisCacheService } from '@/common';
 import { deleteFiles } from '@/common/utils/s3.utils';
 import { State } from '@/common/enums/user.enum';
+import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
+import { UserResponseDto } from './dto/user-response.dto';
 
 @Injectable()
 export class UsersService {
@@ -52,6 +54,23 @@ export class UsersService {
       ...createUserDto,
       password: hashedPassword,
     });
+  }
+
+  // 모든 회원 조회
+  async findAll(pageOptionsDto?: PageOptionsDto) {
+    const { results, total } = await this.usersRepository.find(
+      {},
+      pageOptionsDto,
+      { createdAt: -1 },
+    );
+
+    const users = await Promise.all(
+      results.map(async (user) => {
+        return new UserResponseDto(user);
+      }),
+    );
+
+    return { users, total };
   }
 
   // _id로 회원 정보 조회
