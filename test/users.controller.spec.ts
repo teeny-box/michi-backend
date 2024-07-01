@@ -3,7 +3,7 @@ import { RedisCacheService } from '@/common';
 import { HttpResponse } from '@/common/dto/http-response';
 import { UsersController } from '@/domain/auth/users/users.controller';
 import { UsersService } from '@/domain/auth/users/users.service';
-import RequestWithUser from '@/domain/auth/interfaces/request-with-user.interface';
+import RequestWithUser from '@/common/interfaces/request-with-user.interface';
 import { UpdateUserDto } from '@/domain/auth/users/dto/update-user.dto';
 import { ChangePasswordDto } from '@/domain/auth/users/dto/change-password.dto';
 import { RegisterFcmTokenDto } from '@/domain/auth/users/dto/register-fcm-token.dto';

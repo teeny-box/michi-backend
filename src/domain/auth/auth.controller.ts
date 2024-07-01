@@ -12,7 +12,7 @@ import {
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './users/dto/create-user.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import RequestWithUser from './interfaces/request-with-user.interface';
+import RequestWithUser from '@/common/interfaces/request-with-user.interface';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth.guard';
 import { AuthVerificationDto } from './users/dto/auth-verification.dto';

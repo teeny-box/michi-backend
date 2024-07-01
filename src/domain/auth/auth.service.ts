@@ -5,7 +5,7 @@ import { User } from '@/domain/auth/users/schemas/user.schema';
 import { HttpService } from '@nestjs/axios';
 import { catchError, lastValueFrom, map } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
-import TokenPayload from './interfaces/token-payload.interface';
+import TokenPayload from '@/common/interfaces/token-payload.interface';
 import { ConfigService } from '@nestjs/config';
 import {
   InvalidTokenException,
@@ -15,7 +15,7 @@ import {
   UserWithdrawnException,
 } from './exceptions/auth.exception';
 import { UserNotFoundException } from '@/domain/auth/exceptions/users.exception';
-import { verifyPassword } from './common/utils/password.utils';
+import { verifyPassword } from '@/common/utils/password.utils';
 import { UsersRepository } from './users/users.repository';
 import { AuthVerificationDto } from './users/dto/auth-verification.dto';
 import * as argon2 from 'argon2';

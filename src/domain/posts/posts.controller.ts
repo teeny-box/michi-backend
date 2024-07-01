@@ -15,7 +15,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostResponseDto } from './dto/post-response.dto';
 import { JwtAuthGuard } from '@/domain/auth/guards/jwt-auth.guard';
-import RequestWithUser from '@/domain/auth/interfaces/request-with-user.interface';
+import RequestWithUser from '@/common/interfaces/request-with-user.interface';
 import { HttpResponse } from '@/common/dto/http-response';
 import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
 import { PageDto } from '@/common/dto/page/page.dto';

@@ -8,10 +8,7 @@ import {
   UserNicknameDuplicateException,
   UserNotFoundException,
 } from '@/domain/auth/exceptions/users.exception';
-import {
-  hashPassword,
-  verifyPassword,
-} from '@/domain/auth/common/utils/password.utils';
+import { hashPassword, verifyPassword } from '@/common/utils/password.utils';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { Types } from 'mongoose';
