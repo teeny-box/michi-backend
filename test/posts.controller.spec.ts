@@ -1,9 +1,5 @@
 import { PostsController } from '@/domain/posts/posts.controller';
 import { PostsService } from '@/domain/posts/posts.service';
-import { Post } from '@/domain/posts/schemas/post.schema';
-import { Types } from 'mongoose';
-import { User } from '@/domain/auth/users/schemas/user.schema';
-import { Role, State } from '@/common/enums/user.enum';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreatePostDto } from '@/domain/posts/dto/create-post.dto';
 import RequestWithUser from '@/domain/auth/interfaces/request-with-user.interface';
@@ -13,37 +9,12 @@ import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
 import { PageMetaDto } from '@/common/dto/page/page-meta.dto';
 import { PostNotFoundException } from '@/domain/posts/exceptions/posts.exception';
 import { UpdatePostDto } from '@/domain/posts/dto/update-post.dto';
+import { mockUser } from './mocks/user.mock';
+import { mockPost } from './mocks/post.mock';
 
 describe('PostsController', () => {
   let postsController: PostsController;
   let postsService: PostsService;
-
-  const mockPost: Post = {
-    _id: new Types.ObjectId(),
-    postNumber: 1,
-    userId: 'mockUserId',
-    title: 'Test Post',
-    content: 'This is a test post.',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null,
-  };
-
-  const mockUser: User = {
-    _id: new Types.ObjectId(),
-    userId: 'testuser',
-    password: 'hashedPassword',
-    nickname: 'Test User',
-    userName: 'Test Name',
-    phoneNumber: '010-1234-5678',
-    birthYear: '1990',
-    profileImage: 'image',
-    role: Role.USER,
-    state: State.JOINED,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: new Date(),
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

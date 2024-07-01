@@ -14,11 +14,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { ChatModule } from '@/domain/chat/chat.module';
 import { NotificationModule } from '@/domain/notification/notification.module';
 import { FirebaseAdminModule } from '@/domain/firebase/firebase-admin.module';
-import { NotificationProcessor } from '@/domain/notification/notification.processor';
 import { FirebaseAdminService } from '@/domain/firebase/firebase-admin.service';
 import { RedisConfigService } from '@/config/redis-cache.config';
 import { RedisCacheModule } from '@/common';
 import { ChatroomModule } from '@/domain/chatroom/chatroom.module';
+import { NotificationService } from '@/domain/notification/notification.service';
+import { UserDeviceModule } from '@/domain/device/user-device.module';
 
 @Module({
   imports: [
@@ -45,14 +46,15 @@ import { ChatroomModule } from '@/domain/chatroom/chatroom.module';
       }),
       inject: [ConfigService],
     }),
+    UserDeviceModule,
   ],
   providers: [
     SocketGateway,
     UsersService,
     UsersRepository,
-    NotificationProcessor,
     FirebaseAdminService,
     AuthService,
+    NotificationService,
   ],
 })
 export class SocketModule {}

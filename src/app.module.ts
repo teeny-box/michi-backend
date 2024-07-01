@@ -15,6 +15,7 @@ import { RedisCacheModule } from '@/common';
 import { NotificationModule } from '@/domain/notification/notification.module';
 import { FirebaseAdminModule } from '@/domain/firebase/firebase-admin.module';
 import { ChatroomModule } from '@/domain/chatroom/chatroom.module';
+import { UserDeviceModule } from '@/domain/device/user-device.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { ChatroomModule } from '@/domain/chatroom/chatroom.module';
     PostsModule,
     NotificationModule,
     FirebaseAdminModule,
+    UserDeviceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

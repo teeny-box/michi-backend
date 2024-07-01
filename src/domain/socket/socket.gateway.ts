@@ -10,8 +10,6 @@ import {
 import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { UserResponseDto } from '@/domain/auth/users/dto/user-response.dto';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
 import { UsersService } from '@/domain/auth/users/users.service';
 import { ChatService } from '@/domain/chat/chat.service';
 import { CreateChatDto } from '@/domain/chat/dto/create-chat.dto';
@@ -24,13 +22,11 @@ import { LeaveChatroomDto } from '@/domain/socket/dto/leave-chatroom.dto';
 import { SendMessageDto } from '@/domain/socket/dto/send-message.dto';
 import { ChatroomService } from '@/domain/chatroom/chatroom.service';
 import { ChatroomNotFoundException } from '@/domain/chatroom/exceptions/chatroom.exception';
-import { SendNotificationDto } from '@/domain/notification/dto/send-notification.dto';
 import { UserNotFoundException } from '@/domain/auth/exceptions/users.exception';
-
-const WELCOME_MESSAGE = '님이 입장하셨습니다';
-const GOODBYE_MESSAGE = '님이 퇴장하셨습니다';
-const MESSAGE_SUCCESS = '메시지 전송에 성공하였습니다';
-const NEW_MESSAGE_TITLE = '새로운 메시지가 도착했습니다';
+import { NotificationService } from '@/domain/notification/notification.service';
+import { SendNotificationDto } from '@/domain/notification/dto/send-notification.dto';
+import { NotificationType } from '@/common/enums/notification-type.enum';
+import { SOCKET_MESSAGES } from '@/domain/socket/data/socket.constants';
 
 @WebSocketGateway({
   namespace: '/socket/chat',
@@ -51,26 +47,17 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly userService: UsersService,
     private readonly redisCacheService: RedisCacheService,
     private readonly authService: AuthService,
-    @InjectQueue('notification') private notificationQueue: Queue,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async handleConnection(@ConnectedSocket() socket: Socket) {
     try {
-      const token = socket.handshake.headers.authorization;
-      if (!token || token.length === 0)
-        throw new NoTokenProvidedException('토큰이 제공되지 않았습니다');
-
-      const user = await this.authService.getUserByToken(token);
-      if (!user) throw new UserNotFoundException('사용자를 찾을 수 없습니다');
-      socket.data.userId = user.userId;
-
+      const user = await this.authenticateUser(socket);
+      await this.handleUserConnection(user.userId);
+      this.setupSocketListeners(socket);
       this.logger.log(
         `Client connected: socket id - ${socket.id}, userId - ${user.userId}`,
       );
-
-      await this.handleUserConnection(user.userId);
-
-      this.setupSocketListeners(socket);
     } catch (error) {
       this.logger.error(`Connection error: ${error.message}`, error.stack);
       socket.emit('onError', {
@@ -90,10 +77,23 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private async handleUserConnection(userId: string) {
-    await this.redisCacheService.setUserOnline(userId);
-    if (await this.redisCacheService.isUserInChatQueue(userId)) {
-      await this.redisCacheService.addUserToChatQueue(userId);
-    }
+    await Promise.all([
+      this.redisCacheService.setUserOnline(userId),
+      this.redisCacheService.isUserInChatQueue(userId) &&
+        this.redisCacheService.addUserToChatQueue(userId),
+    ]);
+  }
+
+  private async authenticateUser(socket: Socket) {
+    const token = socket.handshake.headers.authorization;
+    if (!token || token.length === 0)
+      throw new NoTokenProvidedException('토큰이 제공되지 않았습니다');
+
+    const user = await this.authService.getUserByToken(token);
+    if (!user) throw new UserNotFoundException('사용자를 찾을 수 없습니다');
+
+    socket.data.userId = user.userId;
+    return user;
   }
 
   private async handleSocketDisconnectionOnly(
@@ -134,7 +134,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.in(client.id).socketsJoin(chatroomId);
 
       this.server.to(chatroomId).emit('onJoin', {
-        message: `${user.nickname}${WELCOME_MESSAGE}`,
+        message: `${user.nickname}${SOCKET_MESSAGES.WELCOME}`,
         data: new UserResponseDto(user),
       });
     } catch (error) {
@@ -157,7 +157,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.in(client.id).socketsLeave(chatroomId);
 
     this.server.to(chatroomId).emit('onLeave', {
-      message: `${user.nickname}${GOODBYE_MESSAGE}`,
+      message: `${user.nickname}${SOCKET_MESSAGES.GOODBYE}`,
     });
   }
 
@@ -179,15 +179,14 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     userId: string,
     payload: SendMessageDto,
   ) {
-    const sender = await this.userService.findByUserId(userId);
-    const chat = await this.chatService.create({
-      ...payload,
-      userId,
-    } as CreateChatDto);
+    const [sender, chat] = await Promise.all([
+      this.userService.findByUserId(userId),
+      this.chatService.create({ ...payload, userId } as CreateChatDto),
+    ]);
 
     const chatResponse = new ChatResponseDto(chat, sender);
     this.server.to(payload.chatroomId).emit('onMessage', {
-      message: MESSAGE_SUCCESS,
+      message: SOCKET_MESSAGES.MESSAGE_SUCCESS,
       data: chatResponse,
     });
 
@@ -199,27 +198,22 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     chatroomId: string,
     chat: ChatResponseDto,
   ) {
-    const receivers = await this.chatroomService.getReceivers(
+    const receiverIds = await this.chatroomService.getReceivers(
       chatroomId,
       userId,
     );
-    const tokens = await this.userService.getFcmTokensByUserIds(receivers);
 
-    const notificationData = {
-      tokens: tokens,
-      sendNotificationDto: new SendNotificationDto(
-        NEW_MESSAGE_TITLE,
-        chat.message,
-      ),
-    };
+    const sendNotificationDto = new SendNotificationDto(
+      SOCKET_MESSAGES.NEW_MESSAGE_TITLE,
+      chat.message,
+      true,
+      'high',
+      { chatroomId },
+    );
 
-    await this.notificationQueue.add(
-      `send-push-notification`,
-      notificationData,
-      {
-        removeOnComplete: true,
-        removeOnFail: true,
-      },
+    await this.notificationService.sendNotifications(
+      receiverIds,
+      sendNotificationDto,
     );
   }
 

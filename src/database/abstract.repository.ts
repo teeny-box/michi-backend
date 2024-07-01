@@ -14,7 +14,7 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
   protected abstract readonly logger: Logger;
 
   constructor(
-    private readonly model: Model<TDocument>,
+    protected readonly model: Model<TDocument>,
     private readonly connection: Connection,
   ) {}
 
@@ -26,6 +26,16 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
     return (
       await createdDocument.save(options)
     ).toJSON() as unknown as TDocument;
+  }
+
+  async createMany(documents: Partial<TDocument>[], options?: SaveOptions) {
+    return (await this.model.insertMany(
+      documents.map((document) => ({
+        ...document,
+        _id: new Types.ObjectId(),
+      })),
+      options,
+    )) as unknown as TDocument[];
   }
 
   async findOne(filterQuery: FilterQuery<TDocument>) {

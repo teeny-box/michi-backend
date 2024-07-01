@@ -13,7 +13,6 @@ import { Types } from 'mongoose';
 
 describe('ChatroomController', () => {
   let chatroomController: ChatroomController;
-  let chatroomService: ChatroomService;
 
   const mockChatroomService = {
     find: jest.fn(),
@@ -27,7 +26,6 @@ describe('ChatroomController', () => {
     }).compile();
 
     chatroomController = app.get<ChatroomController>(ChatroomController);
-    chatroomService = app.get<ChatroomService>(ChatroomService);
   });
 
   it('should be defined', () => {

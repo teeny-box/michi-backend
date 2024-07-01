@@ -1,36 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
-import { User } from './schemas/user.schema';
-import { Types } from 'mongoose';
-import RequestWithUser from '../interfaces/request-with-user.interface';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import { RegisterFcmTokenDto } from './dto/register-fcm-token.dto';
 import { RedisCacheService } from '@/common';
 import { HttpResponse } from '@/common/dto/http-response';
-import { Role, State } from '@/common/enums/user.enum';
+import { UsersController } from '@/domain/auth/users/users.controller';
+import { UsersService } from '@/domain/auth/users/users.service';
+import RequestWithUser from '@/domain/auth/interfaces/request-with-user.interface';
+import { UpdateUserDto } from '@/domain/auth/users/dto/update-user.dto';
+import { ChangePasswordDto } from '@/domain/auth/users/dto/change-password.dto';
+import { RegisterFcmTokenDto } from '@/domain/auth/users/dto/register-fcm-token.dto';
+import { mockUser } from './mocks/user.mock';
 
 describe('UsersController', () => {
   let usersController: UsersController;
   let usersService: UsersService;
   let redisCacheService: RedisCacheService;
-
-  const mockUser: User = {
-    _id: new Types.ObjectId(),
-    userId: 'testuser',
-    password: 'hashedPassword',
-    nickname: 'Test User',
-    userName: 'Test Name',
-    phoneNumber: '010-1234-5678',
-    birthYear: '1990',
-    profileImage: 'image',
-    role: Role.USER,
-    state: State.JOINED,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: new Date(),
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -168,22 +150,6 @@ describe('UsersController', () => {
           '온라인 사용자 목록이 조회되었습니다.',
           mockOnlineUsers,
         ),
-      );
-    });
-  });
-
-  describe('registerFcmToken', () => {
-    it('should return success message if FCM token is registered', async () => {
-      const mockRequest = { user: mockUser } as RequestWithUser;
-      const mockRegisterFcmTokenDto: RegisterFcmTokenDto = {
-        token: 'testToken',
-      };
-      const response = await usersController.registerFcmToken(
-        mockRequest,
-        mockRegisterFcmTokenDto,
-      );
-      expect(response).toEqual(
-        HttpResponse.success('FCM 토큰 등록이 완료되었습니다.'),
       );
     });
   });

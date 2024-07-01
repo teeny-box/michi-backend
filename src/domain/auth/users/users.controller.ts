@@ -91,17 +91,4 @@ export class UsersController {
       onlineUsers,
     );
   }
-
-  @Post('/fcm-token')
-  @UseGuards(JwtAuthGuard)
-  async registerFcmToken(
-    @Req() req: RequestWithUser,
-    @Body() registerFcmTokenDto: RegisterFcmTokenDto,
-  ) {
-    await this.usersService.registerFcmToken(
-      req.user.userId,
-      registerFcmTokenDto.token,
-    );
-    return HttpResponse.success('FCM 토큰 등록이 완료되었습니다.');
-  }
 }
