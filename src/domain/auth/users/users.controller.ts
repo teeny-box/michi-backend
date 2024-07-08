@@ -101,11 +101,16 @@ export class UsersController {
   async getOnlineUsers(@Query() pageOptionsDto?: PageOptionsDto) {
     const { results, total } =
       await this.usersService.getOnlineUsers(pageOptionsDto);
-    const { data, meta } = new PageDto(
-      results.map((user) => new UserResponseDto(user)),
+    const userResponseDtos = results.map((user) => new UserResponseDto(user));
+    const pageDto = new PageDto(
+      userResponseDtos,
       new PageMetaDto(pageOptionsDto, total),
     );
 
-    return HttpResponse.success('온라인 사용자가 조회되었습니다.', data, meta);
+    return HttpResponse.success(
+      '온라인 사용자 목록이 조회되었습니다.',
+      pageDto.data,
+      pageDto.meta,
+    );
   }
 }

@@ -14,7 +14,6 @@ import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
 describe('UsersController', () => {
   let usersController: UsersController;
   let usersService: UsersService;
-  let redisCacheService: RedisCacheService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -30,11 +29,6 @@ describe('UsersController', () => {
             changePassword: jest.fn(),
             remove: jest.fn(),
             findAll: jest.fn(),
-          },
-        },
-        {
-          provide: RedisCacheService,
-          useValue: {
             getOnlineUsers: jest.fn(),
           },
         },
@@ -43,7 +37,6 @@ describe('UsersController', () => {
 
     usersController = module.get<UsersController>(UsersController);
     usersService = module.get<UsersService>(UsersService);
-    redisCacheService = module.get<RedisCacheService>(RedisCacheService);
   });
 
   it('should be defined', () => {
@@ -169,18 +162,34 @@ describe('UsersController', () => {
   });
 
   describe('getOnlineUsers', () => {
-    it('should return list of online users', async () => {
-      const mockOnlineUsers = ['user1', 'user2'];
+    it('should return page of online users', async () => {
+      const pageOptionsDto: PageOptionsDto = {
+        page: 1,
+        pageSize: 10,
+        skip: 0,
+      };
+
+      const mockOnlineUsers = [mockUser];
+      const mockTotal = 1;
+      const expectedUsers = mockOnlineUsers.map(
+        (user) => new UserResponseDto(user),
+      );
+
       jest
-        .spyOn(redisCacheService, 'getOnlineUsers')
-        .mockResolvedValue(mockOnlineUsers);
-      const response = await usersController.getOnlineUsers();
+        .spyOn(usersService, 'getOnlineUsers')
+        .mockResolvedValue({ results: mockOnlineUsers, total: mockTotal });
+
+      const response = await usersController.getOnlineUsers(pageOptionsDto);
+
       expect(response).toEqual(
         HttpResponse.success(
           '온라인 사용자 목록이 조회되었습니다.',
-          mockOnlineUsers,
+          expectedUsers,
+          new PageMetaDto(pageOptionsDto, mockTotal),
         ),
       );
+
+      expect(usersService.getOnlineUsers).toHaveBeenCalledWith(pageOptionsDto);
     });
   });
 });

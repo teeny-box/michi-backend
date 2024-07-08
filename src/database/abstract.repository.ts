@@ -75,8 +75,10 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
       resultsQuery = resultsQuery.skip(pageOptions.skip).limit(pageSize);
     }
 
-    const results = await resultsQuery.exec();
-    const total = await totalQuery.exec();
+    const [results, total] = await Promise.all([
+      resultsQuery.exec(),
+      totalQuery.exec(),
+    ]);
 
     return { results, total };
   }
