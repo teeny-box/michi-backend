@@ -1,73 +1,40 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Michi : 관심사를 공유하는 랜덤 채팅 서비스
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+웹소켓을 기반으로 하는 서비스를 만들고자 시작하게 되었습니다.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+1차적으로 기획한 기능들을 구현 완료한 상태입니다.
 
-## Description
+## 🖌️ 기획 / 디자인 / api 문서
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📄 스토리보드
 
-## Installation
+## 📄 ERD
 
-```bash
-$ npm install
-```
+![Michi](https://github.com/teeny-box/michi-frontend/assets/56782035/97b6f1a9-91a6-44a9-9f44-52f940c26b0d)
 
-## Running the app
+## 🛠 기술 스택
 
-```bash
-# development
-$ npm run start
+### Front-end
 
-# watch mode
-$ npm run start:dev
+### Back-end
 
-# production mode
-$ npm run start:prod
-```
+## ⚙ 아키텍쳐
 
-## Test
+## 🗂️ 폴더 구조
 
-```bash
-# unit tests
-$ npm run test
+## ✔️ 주요 기능
 
-# e2e tests
-$ npm run test:e2e
+- 랜덤채팅
+   - 랜덤 채팅 버튼을 누르면 온라인 상태인 유저들을 상대로 랜덤채팅 가능
+- 게시글
+   - 자신의 관심사를 게시글로 올리면 관심있는 유저가 채팅 신청 가능
+- 채팅
+   - 1:1 채팅방에서 원활한 채팅 가능
+- 알림
+   - 메시지, 공지사항이 오면 유저 디바이스로 알림 도착 (FCM 사용)
+- 유저
+   - 간단한 핸드폰 인증으로 회원가입
+   - 여러 개의 기기에서 접속
+   - 온라인 상태인 유저 목록 조회
 
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+## 💻 팀원 소개
