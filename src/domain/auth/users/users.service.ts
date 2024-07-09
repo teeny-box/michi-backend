@@ -152,4 +152,13 @@ export class UsersService {
     );
     await this.redisCacheService.del(_id.toString());
   }
+
+  // 온라인 유저 조회
+  async getOnlineUsers(pageOptionsDto: PageOptionsDto) {
+    const userIds = await this.redisCacheService.getOnlineUsers();
+    return await this.usersRepository.find(
+      { userId: { $in: userIds } },
+      pageOptionsDto,
+    );
+  }
 }

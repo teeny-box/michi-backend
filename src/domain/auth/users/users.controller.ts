@@ -15,7 +15,6 @@ import { JwtAuthGuard } from '@/domain/auth/guards/jwt-auth.guard';
 import RequestWithUser from '@/common/interfaces/request-with-user.interface';
 import { OneTimeAuthGuard } from '@/domain/auth/guards/one-time-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { RedisCacheService } from '@/common';
 import { HttpResponse } from '@/common/dto/http-response';
 import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '@/common/decorators/role.decorator';
@@ -23,13 +22,11 @@ import { Role } from '@/common/enums/user.enum';
 import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
 import { PageDto } from '@/common/dto/page/page.dto';
 import { PageMetaDto } from '@/common/dto/page/page-meta.dto';
+import { UserResponseDto } from '@/domain/auth/users/dto/user-response.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly redisCacheService: RedisCacheService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @Get('/id-check/:userId')
   async checkUserId(@Param('userId') userId: string) {
@@ -101,11 +98,19 @@ export class UsersController {
 
   @Get('online')
   @UseGuards(JwtAuthGuard)
-  async getOnlineUsers() {
-    const onlineUsers = await this.redisCacheService.getOnlineUsers();
+  async getOnlineUsers(@Query() pageOptionsDto?: PageOptionsDto) {
+    const { results, total } =
+      await this.usersService.getOnlineUsers(pageOptionsDto);
+    const userResponseDtos = results.map((user) => new UserResponseDto(user));
+    const pageDto = new PageDto(
+      userResponseDtos,
+      new PageMetaDto(pageOptionsDto, total),
+    );
+
     return HttpResponse.success(
       '온라인 사용자 목록이 조회되었습니다.',
-      onlineUsers,
+      pageDto.data,
+      pageDto.meta,
     );
   }
 }
