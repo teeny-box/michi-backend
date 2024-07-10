@@ -35,7 +35,7 @@
 
 ## 📄 스토리보드
 
-![미치 스토리보드](https://github.com/teeny-box/michi-backend/assets/122986061/5c79a753-4e15-42de-8208-291b31237881)
+![미치 스토리보드](https://github.com/teeny-box/michi-backend/assets/122986061/468b6167-b117-4ebd-9bfa-276450c7f331)
 
 ## 📄 ERD
 
@@ -60,8 +60,7 @@
 
 ## ⚙ 아키텍쳐
 
-![미치 아키텍처](https://github.com/teeny-box/michi-backend/assets/122986061/cbe6d5cb-68ce-4f16-874f-ae331f5b264d)
-
+![미치 아키텍처](https://github.com/teeny-box/michi-backend/assets/122986061/d0292a4e-5248-460b-bcdd-cab20112a56d)
 
 ## ✔️ 주요 기능
 
