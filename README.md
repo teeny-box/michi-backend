@@ -35,6 +35,8 @@
 
 ## 📄 스토리보드
 
+![미치 스토리보드](https://github.com/teeny-box/michi-backend/assets/122986061/5c79a753-4e15-42de-8208-291b31237881)
+
 ## 📄 ERD
 
 ![Michi](https://github.com/teeny-box/michi-frontend/assets/56782035/97b6f1a9-91a6-44a9-9f44-52f940c26b0d)
@@ -58,6 +60,9 @@
 
 ## ⚙ 아키텍쳐
 
+![미치 아키텍처](https://github.com/teeny-box/michi-backend/assets/122986061/cbe6d5cb-68ce-4f16-874f-ae331f5b264d)
+
+
 ## ✔️ 주요 기능
 
 - 랜덤채팅
@@ -78,6 +83,7 @@
 ## 🚀 트러블 슈팅
 
 <br/>
+
 
 ## 💻 팀원 소개
 
@@ -103,7 +109,7 @@
             <a href="https://github.com/dongjangoon"><I>dongjangoon</I></a>
         </td>
         <td>
-            <img src="https://avatars.githubusercontent.com/u/122986061?size=100">
+            <img src="https://github.com/teeny-box/michi-backend/assets/122986061/8f44da9d-df24-47d5-bf8f-d6dbfac02c30" width=100>
             <br>
             <a href="https://github.com/eunli"><I>eunli</I></a>
         </td>
