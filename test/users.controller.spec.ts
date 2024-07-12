@@ -160,36 +160,4 @@ describe('UsersController', () => {
       );
     });
   });
-
-  describe('getOnlineUsers', () => {
-    it('should return page of online users', async () => {
-      const pageOptionsDto: PageOptionsDto = {
-        page: 1,
-        pageSize: 10,
-        skip: 0,
-      };
-
-      const mockOnlineUsers = [mockUser];
-      const mockTotal = 1;
-      const expectedUsers = mockOnlineUsers.map(
-        (user) => new UserResponseDto(user),
-      );
-
-      jest
-        .spyOn(usersService, 'getOnlineUsers')
-        .mockResolvedValue({ results: mockOnlineUsers, total: mockTotal });
-
-      const response = await usersController.getOnlineUsers(pageOptionsDto);
-
-      expect(response).toEqual(
-        HttpResponse.success(
-          '온라인 사용자 목록이 조회되었습니다.',
-          expectedUsers,
-          new PageMetaDto(pageOptionsDto, mockTotal),
-        ),
-      );
-
-      expect(usersService.getOnlineUsers).toHaveBeenCalledWith(pageOptionsDto);
-    });
-  });
 });

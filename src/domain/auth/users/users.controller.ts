@@ -22,7 +22,6 @@ import { Role } from '@/common/enums/user.enum';
 import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
 import { PageDto } from '@/common/dto/page/page.dto';
 import { PageMetaDto } from '@/common/dto/page/page-meta.dto';
-import { UserResponseDto } from '@/domain/auth/users/dto/user-response.dto';
 
 @Controller('users')
 export class UsersController {
@@ -94,23 +93,5 @@ export class UsersController {
   async remove(@Req() req: RequestWithUser) {
     await this.usersService.remove(req.user._id);
     return HttpResponse.success('회원 탈퇴가 완료되었습니다.');
-  }
-
-  @Get('online')
-  @UseGuards(JwtAuthGuard)
-  async getOnlineUsers(@Query() pageOptionsDto?: PageOptionsDto) {
-    const { results, total } =
-      await this.usersService.getOnlineUsers(pageOptionsDto);
-    const userResponseDtos = results.map((user) => new UserResponseDto(user));
-    const pageDto = new PageDto(
-      userResponseDtos,
-      new PageMetaDto(pageOptionsDto, total),
-    );
-
-    return HttpResponse.success(
-      '온라인 사용자 목록이 조회되었습니다.',
-      pageDto.data,
-      pageDto.meta,
-    );
   }
 }
