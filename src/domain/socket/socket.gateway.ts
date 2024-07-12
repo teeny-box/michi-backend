@@ -25,8 +25,11 @@ import { ChatroomNotFoundException } from '@/domain/chatroom/exceptions/chatroom
 import { UserNotFoundException } from '@/domain/auth/exceptions/users.exception';
 import { NotificationService } from '@/domain/notification/notification.service';
 import { SendNotificationDto } from '@/domain/notification/dto/send-notification.dto';
-import { NotificationType } from '@/common/enums/notification-type.enum';
 import { SOCKET_MESSAGES } from '@/domain/socket/data/socket.constants';
+import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
+import { PageDto } from '@/common/dto/page/page.dto';
+import { PageMetaDto } from '@/common/dto/page/page-meta.dto';
+import { SocketUserResponseDto } from '@/domain/socket/dto/socket-user-response.dto';
 
 @WebSocketGateway({
   namespace: '/socket/chat',
@@ -68,20 +71,44 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleDisconnect(@ConnectedSocket() socket: Socket) {
-    const { userId } = socket.handshake.query as { userId: string };
+    const user = await this.authenticateUser(socket);
     this.logger.log(
-      `Client disconnected: socket id - ${socket.id}, userId - ${userId}`,
+      `Client disconnected: socket id - ${socket.id}, userId - ${user.userId}`,
     );
 
-    await this.handleUserDisconnection(socket, userId);
+    await this.handleUserDisconnection(socket, user.userId);
   }
 
   private async handleUserConnection(userId: string) {
-    await Promise.all([
-      this.redisCacheService.setUserOnline(userId),
-      this.redisCacheService.isUserInChatQueue(userId) &&
-        this.redisCacheService.addUserToChatQueue(userId),
-    ]);
+    await this.updateOnlineStatus(userId, true);
+    if (await this.redisCacheService.isUserInChatQueue(userId)) {
+      await this.redisCacheService.addUserToChatQueue(userId);
+    }
+  }
+
+  private async updateOnlineStatus(userId: string, isOnline: boolean) {
+    const updatedUser = await this.userService.findByUserId(userId);
+
+    if (isOnline) {
+      await this.redisCacheService.setUserOnline(userId);
+    } else {
+      await this.redisCacheService.setUserOffline(userId);
+    }
+
+    this.server.emit('onlineUsersUpdated', {
+      message: SOCKET_MESSAGES.UPDATE_ONLINE_STATUS,
+      data: new SocketUserResponseDto(updatedUser, isOnline),
+    });
+  }
+
+  private async handleUserDisconnection(
+    @ConnectedSocket() socket: Socket,
+    userId: string,
+  ) {
+    await this.updateOnlineStatus(userId, false);
+    socket.disconnect(true);
+    await this.updateOnlineStatus(userId, false);
+    await this.redisCacheService.removeUserFromChatQueue(userId);
   }
 
   private async authenticateUser(socket: Socket) {
@@ -102,18 +129,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     socket.disconnect(true);
   }
 
-  private async handleUserDisconnection(
-    @ConnectedSocket() socket: Socket,
-    userId: string,
-  ) {
-    socket.disconnect(true);
-    await this.redisCacheService.setUserOffline(userId);
-    await this.redisCacheService.removeUserFromChatQueue(userId);
-  }
-
   private setupSocketListeners(socket: Socket) {
     socket.on('join', (data) => this.handleJoin(socket, data));
     socket.on('leave', (data) => this.handleLeave(socket, data));
+    socket.on('getOnlineUsers', () => this.handleGetOnlineUsers(socket));
+    socket.on('getOnlineUserIds', () => this.handleGetOnlineUserIds(socket));
   }
 
   private async handleJoin(
@@ -172,6 +192,47 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       await this.sendPushNotifications(userId, payload.chatroomId, chat);
     } catch (error) {
       this.handleError(client, 'Message error', error);
+    }
+  }
+
+  @SubscribeMessage('getOnlineUserIds')
+  async handleGetOnlineUserIds(@ConnectedSocket() client: Socket) {
+    try {
+      const onlineUserIds = await this.redisCacheService.getOnlineUsers();
+      client.emit('onGetOnlineUserIds', {
+        message: SOCKET_MESSAGES.GET_ONLINE_USERS_SUCCESS,
+        data: onlineUserIds,
+      });
+    } catch (error) {
+      this.handleError(client, 'Get online user ids error', error);
+    }
+  }
+
+  @SubscribeMessage('getOnlineUsers')
+  async handleGetOnlineUsers(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload?: Partial<PageOptionsDto>,
+  ) {
+    const page = payload?.page ?? 1;
+    const pageSize = payload?.pageSize ?? 10;
+    const pageOptionsDto = new PageOptionsDto(page, pageSize);
+
+    try {
+      const { results, total } =
+        await this.userService.getOnlineUsers(pageOptionsDto);
+      const userResponseDtos = results.map((user) => new UserResponseDto(user));
+      const pageDto = new PageDto(
+        userResponseDtos,
+        new PageMetaDto(pageOptionsDto, total),
+      );
+
+      client.emit('onGetOnlineUsers', {
+        message: SOCKET_MESSAGES.GET_ONLINE_USERS_SUCCESS,
+        data: pageDto.data,
+        meta: pageDto.meta,
+      });
+    } catch (error) {
+      this.handleError(client, 'Get online users error', error);
     }
   }
 

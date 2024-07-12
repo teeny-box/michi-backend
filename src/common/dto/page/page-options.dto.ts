@@ -6,15 +6,20 @@ export class PageOptionsDto {
   @IsInt()
   @IsOptional()
   @Min(1)
-  readonly page: number;
+  page: number;
 
   @Type(() => Number)
   @IsInt()
   @IsOptional()
   @Min(1)
-  readonly pageSize: number;
+  pageSize: number;
 
   get skip() {
     return (this.page - 1) * this.pageSize;
+  }
+
+  constructor(page = 1, pageSize = 10) {
+    this.page = page;
+    this.pageSize = pageSize;
   }
 }
