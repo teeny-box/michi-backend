@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { AbstractDocument } from '@/database/abstract.schema';
-import { FileType } from '@/common/enums/message-type.enum';
+import { FileType } from '@/common/enums/file-type.enum';
 
 @Schema()
 export class Chat extends AbstractDocument {

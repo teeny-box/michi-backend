@@ -52,6 +52,7 @@ export class ChatroomService {
     return await this.chatroomRepository.create({
       ...createChatRoomDto,
       userUnreadCounts,
+      lastMessage: '',
     });
   }
 
@@ -103,7 +104,7 @@ export class ChatroomService {
   ) {
     const updateQuery = {
       $set: {
-        message,
+        lastMessage: message,
         updatedAt: new Date(),
       },
       $inc: {},
@@ -123,6 +124,14 @@ export class ChatroomService {
       { _id: chatroomId },
       updateQuery,
       { new: true, upsert: true },
+    );
+  }
+
+  async resetUnreadCount(chatroomId: string, userId: string): Promise<void> {
+    await this.chatroomRepository.findOneAndUpdate(
+      { _id: chatroomId },
+      { $set: { [`userUnreadCounts.${userId}`]: 0 } },
+      { new: true },
     );
   }
 

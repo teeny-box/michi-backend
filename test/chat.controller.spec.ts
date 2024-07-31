@@ -5,7 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
 import { Chat } from '@/domain/chat/schemas/chat.schema';
 import { Types } from 'mongoose';
-import { MessageType } from '@/common/enums/message-type.enum';
+import { MessageType } from '@/common/enums/file-type.enum';
 import { User } from '@/domain/auth/users/schemas/user.schema';
 import { Role, State } from '@/common/enums/user.enum';
 import { ChatResponseDto } from '@/domain/chat/dto/chat-response.dto';

@@ -1,5 +1,5 @@
 import { IsString } from 'class-validator';
-import { FileType } from '@/common/enums/message-type.enum';
+import { FileType } from '@/common/enums/file-type.enum';
 
 export class SendMessageDto {
   @IsString()

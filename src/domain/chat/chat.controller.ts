@@ -24,6 +24,7 @@ import { ChatroomResponseDto } from '@/domain/chatroom/dto/chatroom-response.dto
 import { NotEnoughUserInChatQueueException } from '@/domain/chatroom/exceptions/chatroom.exception';
 
 @Controller('chat')
+@UseGuards(JwtAuthGuard)
 export class ChatController {
   constructor(
     private readonly chatService: ChatService,
@@ -35,8 +36,13 @@ export class ChatController {
   @Get(':chatroomId')
   async findAllByChatroomId(
     @Param('chatroomId') chatroomId: string,
+    @Req() req: RequestWithUser,
     @Query() pageOptionsDto?: PageOptionsDto,
   ) {
+    const userId = req.user.userId;
+
+    await this.chatroomService.resetUnreadCount(chatroomId, userId);
+
     const { results, total } = await this.chatService.find(
       chatroomId,
       pageOptionsDto,
