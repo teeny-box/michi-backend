@@ -10,14 +10,20 @@ export class ChatRoom extends AbstractDocument {
   @Prop({ type: String, enum: ChatRoomType })
   type: ChatRoomType;
 
-  @Prop({ type: String })
-  ownerId: string;
-
-  @Prop({ type: [String] })
-  userIds: Set<string>;
+  @Prop({ type: [String], default: [] })
+  userIds: string[];
 
   @Prop({ type: String })
-  lastMessageId: string;
+  lastMessage: string;
+
+  @Prop({ type: Number })
+  unreadCount: number;
+
+  @Prop({ type: Object, default: {} })
+  userUnreadCounts: Record<string, number>;
+
+  @Prop({ type: [String], default: [] })
+  joinedUserIds: string[];
 
   @Prop({ type: String })
   createdAt: Date;

@@ -1,27 +1,19 @@
-import { ChatRoom } from '../schemas/chatroom.schema';
 import { Types } from 'mongoose';
 import { ChatRoomType } from '@/common/enums/chatroomtype.enum';
+import { ChatRoom } from '@/domain/chatroom/schemas/chatroom.schema';
 
-export class ChatroomResponseDto {
+export class CreateChatroomResponseDto {
   readonly id: Types.ObjectId;
   readonly title: string;
   readonly type: ChatRoomType;
-  readonly userIds: string[];
-  readonly lastMessage: string;
-  readonly unreadCount: number;
-  readonly isJoined: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
   readonly deletedAt?: Date | null;
 
-  constructor(chatroom: ChatRoom, userId: string) {
+  constructor(chatroom: ChatRoom) {
     this.id = chatroom._id;
     this.title = chatroom.title;
     this.type = chatroom.type;
-    this.userIds = chatroom.userIds;
-    this.lastMessage = chatroom.lastMessage;
-    this.unreadCount = chatroom.userUnreadCounts[userId] || 0;
-    this.isJoined = chatroom.joinedUserIds.includes(userId);
     this.createdAt = chatroom.createdAt;
     this.updatedAt = chatroom.updatedAt;
     this.deletedAt = chatroom.deletedAt;
