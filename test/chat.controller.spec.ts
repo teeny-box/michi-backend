@@ -5,7 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PageOptionsDto } from '@/common/dto/page/page-options.dto';
 import { Chat } from '@/domain/chat/schemas/chat.schema';
 import { Types } from 'mongoose';
-import { MessageType } from '@/common/enums/file-type.enum';
+import { FileType } from '@/common/enums/file-type.enum';
 import { User } from '@/domain/auth/users/schemas/user.schema';
 import { Role, State } from '@/common/enums/user.enum';
 import { ChatResponseDto } from '@/domain/chat/dto/chat-response.dto';
@@ -13,6 +13,11 @@ import { PageMetaDto } from '@/common/dto/page/page-meta.dto';
 import { HttpResponse } from '@/common/dto/http-response';
 import { RedisCacheService } from '@/common';
 import { ChatroomService } from '@/domain/chatroom/chatroom.service';
+import RequestWithUser from '@/common/interfaces/request-with-user.interface';
+import { ChatroomResponseDto } from '@/domain/chatroom/dto/chatroom-response.dto';
+import { CreateChatroomDto } from '@/domain/chatroom/dto/create-chatroom.dto';
+import { ChatRoomType } from '@/common/enums/chatroomtype.enum';
+import { NotEnoughUserInChatQueueException } from '@/domain/chatroom/exceptions/chatroom.exception';
 
 describe('ChatController', () => {
   let chatController: ChatController;
@@ -26,12 +31,13 @@ describe('ChatController', () => {
   };
 
   const mockRedisCacheService = {
-    get: jest.fn(),
-    set: jest.fn(),
+    getNextUserFromChatQueue: jest.fn(),
+    addUserToChatQueue: jest.fn(),
   };
 
   const mockChatroomService = {
     create: jest.fn(),
+    resetUnreadCount: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -56,20 +62,16 @@ describe('ChatController', () => {
     it('it should return chat messages with user information', async () => {
       // Given
       const chatroomId = 'chatroomId';
-      const pageOptionsDto: PageOptionsDto = {
-        page: 1,
-        pageSize: 10,
-        get skip(): number {
-          return (this.page - 1) * this.pageSize;
-        },
-      };
+      const pageOptionsDto = new PageOptionsDto(1, 10);
+      const req = { user: { userId: 'user1' } } as RequestWithUser;
+
       const chats: Chat[] = [
         {
           _id: new Types.ObjectId('664e1bdc14426cbe69b15ce9'),
           chatroomId: chatroomId,
           userId: 'user1',
           message: 'Hello, World!',
-          messageType: MessageType.TEXT,
+          fileType: FileType.NONE,
           createdAt: new Date(),
         },
         {
@@ -77,7 +79,7 @@ describe('ChatController', () => {
           chatroomId: chatroomId,
           userId: 'user2',
           message: 'Hi, there!',
-          messageType: MessageType.TEXT,
+          fileType: FileType.NONE,
           createdAt: new Date(),
         },
       ];
@@ -123,6 +125,7 @@ describe('ChatController', () => {
       // When
       const result = await chatController.findAllByChatroomId(
         chatroomId,
+        req,
         pageOptionsDto,
       );
 
@@ -138,6 +141,10 @@ describe('ChatController', () => {
         expectedMeta,
       );
 
+      expect(mockChatroomService.resetUnreadCount).toHaveBeenCalledWith(
+        chatroomId,
+        'user1',
+      );
       expect(result).toEqual(expectedResponse);
       expect(mockChatService.find).toHaveBeenCalledWith(
         chatroomId,
@@ -147,6 +154,66 @@ describe('ChatController', () => {
         'user1',
         'user2',
       ]);
+    });
+
+    describe('startRandomChat', () => {
+      it('should start a random chat when another user is available', async () => {
+        // Given
+        const req = { user: { userId: 'user1' } } as RequestWithUser;
+        const receiver = 'user2';
+        const chatroom = {
+          _id: new Types.ObjectId('664e1bdc14426cbe69b15ce9'),
+          title: 'user1, user2',
+          type: ChatRoomType.PRIVATE,
+          userIds: ['user1', 'user2'],
+          lastMessage: '',
+          unreadCount: 0,
+          userUnreadCounts: {},
+          joinedUserIds: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          deletedAt: null,
+        };
+
+        mockRedisCacheService.getNextUserFromChatQueue.mockResolvedValueOnce(
+          receiver,
+        );
+        mockChatroomService.create.mockResolvedValueOnce(chatroom);
+
+        // When
+        const result = await chatController.startRandomChat(req);
+
+        // Then
+        expect(result).toEqual(
+          HttpResponse.success(
+            `${receiver}님과 채팅을 시작합니다.`,
+            new ChatroomResponseDto(chatroom, 'user1'),
+          ),
+        );
+        expect(
+          mockRedisCacheService.getNextUserFromChatQueue,
+        ).toHaveBeenCalledTimes(1);
+        expect(mockChatroomService.create).toHaveBeenCalledWith(
+          new CreateChatroomDto(`user1, ${receiver}`, ChatRoomType.PRIVATE, [
+            'user1',
+            receiver,
+          ]),
+        );
+        expect(mockRedisCacheService.addUserToChatQueue).toHaveBeenCalledWith(
+          receiver,
+        );
+      });
+
+      it('should throw NotEnoughUserInChatQueueException when no other user is available', async () => {
+        // Given
+        const req = { user: { userId: 'user1' } } as RequestWithUser;
+        mockRedisCacheService.getNextUserFromChatQueue.mockResolvedValue(null);
+
+        // When & Then
+        await expect(chatController.startRandomChat(req)).rejects.toThrow(
+          NotEnoughUserInChatQueueException,
+        );
+      });
     });
   });
 });
