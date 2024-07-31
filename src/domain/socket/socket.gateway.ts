@@ -81,7 +81,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private async handleUserConnection(userId: string) {
     await this.updateOnlineStatus(userId, true);
-    if (await this.redisCacheService.isUserInChatQueue(userId)) {
+    if (!(await this.redisCacheService.isUserInChatQueue(userId))) {
       await this.redisCacheService.addUserToChatQueue(userId);
     }
   }
