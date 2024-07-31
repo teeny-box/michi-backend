@@ -4,7 +4,7 @@ import { Role, State } from '@/common/enums/user.enum';
 
 export const mockUser: User = {
   _id: new Types.ObjectId(),
-  userId: 'testuser',
+  userId: 'testUser',
   password: 'hashedPassword',
   nickname: 'Test User',
   userName: 'Test Name',

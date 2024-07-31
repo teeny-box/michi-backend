@@ -189,6 +189,12 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const userId = client.data.userId;
       const chat = await this.createAndBroadcastMessage(userId, payload);
+
+      await this.chatroomService.updateLastMessageAndUnreadCount(
+        payload.chatroomId,
+        payload.fileUrl ? `[${payload.fileType}]` : payload.message,
+        userId,
+      );
       await this.sendPushNotifications(userId, payload.chatroomId, chat);
     } catch (error) {
       this.handleError(client, 'Message error', error);

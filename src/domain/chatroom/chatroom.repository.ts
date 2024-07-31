@@ -14,4 +14,22 @@ export class ChatroomRepository extends AbstractRepository<ChatRoom> {
   ) {
     super(chatRoomModel, connection);
   }
+
+  async updateLastMessageAndUnreadCount(
+    chatroomId: string,
+    message: string,
+    senderId: string,
+  ) {
+    return this.findOneAndUpdate(
+      { _id: chatroomId },
+      {
+        $set: { lastMessage: message },
+        $inc: { [`userUnreadCounts.${senderId}`]: 1 },
+      },
+      {
+        arrayFilters: [{ elem: { $ne: senderId } }],
+        multi: true,
+      },
+    );
+  }
 }
