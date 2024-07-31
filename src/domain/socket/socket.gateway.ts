@@ -192,7 +192,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       await this.chatroomService.updateLastMessageAndUnreadCount(
         payload.chatroomId,
-        payload.message,
+        payload.fileUrl ? `[${payload.fileType}]` : payload.message,
         userId,
       );
       await this.sendPushNotifications(userId, payload.chatroomId, chat);

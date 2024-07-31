@@ -101,10 +101,28 @@ export class ChatroomService {
     message: string,
     senderId: string,
   ) {
-    return this.chatroomRepository.updateLastMessageAndUnreadCount(
-      chatroomId,
-      message,
-      senderId,
+    const updateQuery = {
+      $set: {
+        message,
+        updatedAt: new Date(),
+      },
+      $inc: {},
+      $setOnInsert: {
+        createdAt: new Date(),
+      },
+    };
+
+    const chatroom = await this.findOne(chatroomId);
+    chatroom.userIds.forEach((participantId) => {
+      if (participantId !== senderId) {
+        updateQuery.$inc[`userUnreadCounts.${participantId}`] = 1;
+      }
+    });
+
+    return this.chatroomRepository.findOneAndUpdate(
+      { _id: chatroomId },
+      updateQuery,
+      { new: true, upsert: true },
     );
   }
 
