@@ -7,16 +7,20 @@ import { PageDto } from '@/common/dto/page/page.dto';
 import { ChatroomResponseDto } from '@/domain/chatroom/dto/chatroom-response.dto';
 import { HttpResponse } from '@/common/dto/http-response';
 import { CreateChatroomDto } from '@/domain/chatroom/dto/create-chatroom.dto';
-import { chatroomMock } from './mocks/chatroom.mock';
 import { ChatRoomType } from '@/common/enums/chatroomtype.enum';
-import { Types } from 'mongoose';
+import { CreateChatroomResponseDto } from '@/domain/chatroom/dto/create-chatroom-response.dto';
+
+import { chatroomMock } from './mocks/chatroom.mock';
+import { mockUser } from './mocks/user.mock';
+import RequestWithUser from '@/common/interfaces/request-with-user.interface';
 
 describe('ChatroomController', () => {
   let chatroomController: ChatroomController;
 
   const mockChatroomService = {
-    find: jest.fn(),
+    findWithDetails: jest.fn(),
     create: jest.fn(),
+    softDeleteChatRoom: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -35,25 +39,27 @@ describe('ChatroomController', () => {
   describe('find', () => {
     it('should return a paginated list of chatrooms', async () => {
       // Given
-      const userId = 'userId';
-      const pageOptionsDto: PageOptionsDto = {
-        page: 1,
-        pageSize: 10,
-        get skip() {
-          return (this.page - 1) * this.pageSize;
-        },
-      };
+      const pageOptionsDto: PageOptionsDto = new PageOptionsDto(1, 10);
       const chatrooms = [chatroomMock];
       const total = chatrooms.length;
 
-      mockChatroomService.find.mockResolvedValue({ results: chatrooms, total });
+      mockChatroomService.findWithDetails.mockResolvedValue({
+        results: chatrooms,
+        total,
+      });
+
+      const req = {
+        user: mockUser,
+      } as RequestWithUser;
 
       // When
-      const result = await chatroomController.find(userId, pageOptionsDto);
+      const result = await chatroomController.find(req, pageOptionsDto);
 
       // Then
       const expectedData = new PageDto(
-        chatrooms.map((chatroom) => new ChatroomResponseDto(chatroom)),
+        chatrooms.map(
+          (chatroom) => new ChatroomResponseDto(chatroom, mockUser.userId),
+        ),
         new PageMetaDto(pageOptionsDto, total),
       );
 
@@ -64,8 +70,8 @@ describe('ChatroomController', () => {
           expectedData.meta,
         ),
       );
-      expect(mockChatroomService.find).toHaveBeenCalledWith(
-        userId,
+      expect(mockChatroomService.findWithDetails).toHaveBeenCalledWith(
+        mockUser.userId,
         pageOptionsDto,
       );
     });
@@ -77,19 +83,10 @@ describe('ChatroomController', () => {
       const createChatroomDto = new CreateChatroomDto(
         'title',
         ChatRoomType.PRIVATE,
-        'userId',
+        ['testUser', 'userId2'],
       );
-      const createdChatroom = {
-        _id: new Types.ObjectId('664e1bdc14426cbe69b15ce9'),
-        userIds: new Set(['userId']),
-        lastMessageId: 'lastMessageIdMock',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: null,
-        ...createChatroomDto,
-      };
 
-      mockChatroomService.create.mockResolvedValue(createdChatroom);
+      mockChatroomService.create.mockResolvedValue(chatroomMock);
 
       // When
       const result = await chatroomController.create(createChatroomDto);
@@ -98,11 +95,29 @@ describe('ChatroomController', () => {
       expect(result).toEqual(
         HttpResponse.success(
           '채팅방이 생성되었습니다.',
-          new ChatroomResponseDto(createdChatroom),
+          new CreateChatroomResponseDto(chatroomMock),
         ),
       );
       expect(mockChatroomService.create).toHaveBeenCalledWith(
         createChatroomDto,
+      );
+    });
+  });
+
+  describe('softDeleteChatRoom', () => {
+    it('should soft delete a chatroom', async () => {
+      // Given
+      const chatroomId = '664e1bdc14426cbe69b15ce9';
+
+      mockChatroomService.softDeleteChatRoom.mockResolvedValue(undefined);
+
+      // When
+      const result = await chatroomController.softDeleteChatRoom(chatroomId);
+
+      // Then
+      expect(result).toEqual(HttpResponse.success('채팅방이 삭제되었습니다.'));
+      expect(mockChatroomService.softDeleteChatRoom).toHaveBeenCalledWith(
+        chatroomId,
       );
     });
   });

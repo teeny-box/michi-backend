@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { AbstractDocument } from '@/database/abstract.schema';
-import { MessageType } from '@/common/enums/message-type.enum';
+import { FileType } from '@/common/enums/file-type.enum';
 
 @Schema()
 export class Chat extends AbstractDocument {
@@ -15,10 +15,13 @@ export class Chat extends AbstractDocument {
 
   @Prop({
     type: String,
-    enum: MessageType,
-    required: true,
+    enum: FileType,
+    default: FileType.NONE,
   })
-  messageType: MessageType;
+  fileType: FileType;
+
+  @Prop({ type: String })
+  fileUrl?: string;
 
   @Prop({ type: Date, default: Date.now })
   createdAt: Date;

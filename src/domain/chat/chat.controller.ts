@@ -24,6 +24,7 @@ import { ChatroomResponseDto } from '@/domain/chatroom/dto/chatroom-response.dto
 import { NotEnoughUserInChatQueueException } from '@/domain/chatroom/exceptions/chatroom.exception';
 
 @Controller('chat')
+@UseGuards(JwtAuthGuard)
 export class ChatController {
   constructor(
     private readonly chatService: ChatService,
@@ -35,8 +36,13 @@ export class ChatController {
   @Get(':chatroomId')
   async findAllByChatroomId(
     @Param('chatroomId') chatroomId: string,
+    @Req() req: RequestWithUser,
     @Query() pageOptionsDto?: PageOptionsDto,
   ) {
+    const userId = req.user.userId;
+
+    await this.chatroomService.resetUnreadCount(chatroomId, userId);
+
     const { results, total } = await this.chatService.find(
       chatroomId,
       pageOptionsDto,
@@ -79,11 +85,13 @@ export class ChatController {
     }
 
     if (receiver) {
+      const participants = [sender, receiver];
+
       const chatroom = await this.chatroomService.create(
         new CreateChatroomDto(
           `${sender}, ${receiver}`,
           ChatRoomType.PRIVATE,
-          sender,
+          participants,
         ),
       );
 
@@ -92,7 +100,7 @@ export class ChatController {
 
       return HttpResponse.success(
         `${receiver}님과 채팅을 시작합니다.`,
-        new ChatroomResponseDto(chatroom),
+        new ChatroomResponseDto(chatroom, sender),
       );
     } else {
       throw new NotEnoughUserInChatQueueException(

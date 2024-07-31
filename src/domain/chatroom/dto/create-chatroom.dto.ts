@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { ChatRoomType } from '@/common/enums/chatroomtype.enum';
 
 export class CreateChatroomDto {
@@ -10,13 +10,13 @@ export class CreateChatroomDto {
   @IsNotEmpty()
   type: ChatRoomType;
 
-  @IsString()
+  @IsArray()
   @IsNotEmpty()
-  ownerId: string;
+  userIds: string[];
 
-  constructor(title: string, type: ChatRoomType, ownerId: string) {
+  constructor(title: string, type: ChatRoomType, userIds: string[]) {
     this.title = title;
     this.type = type;
-    this.ownerId = ownerId;
+    this.userIds = userIds;
   }
 }
