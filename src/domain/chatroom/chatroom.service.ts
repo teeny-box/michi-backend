@@ -8,20 +8,11 @@ import { ChatroomNotFoundException } from '@/domain/chatroom/exceptions/chatroom
 export class ChatroomService {
   constructor(private readonly chatroomRepository: ChatroomRepository) {}
 
-  async find(userId?: string, pageOptionsDto?: PageOptionsDto) {
-    if (userId) {
-      return await this.chatroomRepository.find(
-        { userIds: { $in: [userId] } },
-        pageOptionsDto,
-      );
-    }
-    return await this.chatroomRepository.find({}, pageOptionsDto);
-  }
-
   async findWithDetails(userId: string, pageOptionsDto?: PageOptionsDto) {
     const chatrooms = await this.chatroomRepository.find(
       { userIds: { $in: [userId] } },
       pageOptionsDto,
+      { updatedAt: -1 },
     );
 
     const detailedChatrooms = chatrooms.results.map((chatroom) => ({

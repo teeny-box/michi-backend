@@ -28,3 +28,5 @@ export class Chat extends AbstractDocument {
 }
 
 export const ChatSchema = SchemaFactory.createForClass(Chat);
+
+ChatSchema.index({ chatroomId: 1, createdAt: 1 });

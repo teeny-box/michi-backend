@@ -22,14 +22,16 @@ export class ChatRoom extends AbstractDocument {
   @Prop({ type: [String], default: [] })
   joinedUserIds: string[];
 
-  @Prop({ type: String })
+  @Prop({ type: Date })
   createdAt: Date;
 
-  @Prop({ type: String })
+  @Prop({ type: Date })
   updatedAt: Date;
 
-  @Prop({ type: String })
+  @Prop({ type: Date })
   deletedAt: Date;
 }
 
 export const ChatRoomSchema = SchemaFactory.createForClass(ChatRoom);
+
+ChatRoomSchema.index({ updatedAt: -1 });

@@ -17,7 +17,9 @@ export class ChatService {
     if (!chatroom) {
       throw new ChatroomNotFoundException('채팅방이 존재하지 않습니다.');
     }
-    return await this.chatRepository.find({ chatroomId }, pageOptionsDto);
+    return await this.chatRepository.find({ chatroomId }, pageOptionsDto, {
+      createdAt: 1,
+    });
   }
 
   async create(createChatDto: CreateChatDto) {
